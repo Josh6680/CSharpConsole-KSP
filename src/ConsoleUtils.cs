@@ -5,7 +5,6 @@ using System.IO;
 using System.Reflection;
 using UnityEngine;
 using KSP;
-using KSP.IO;
 using Mono;
 using Mono.CSharp;
 
@@ -13,13 +12,10 @@ public static class Dependancy
 {
     public static Assembly Load(string filename)
     {
-        string path = new System.IO.FileInfo(Assembly.GetExecutingAssembly().Location).DirectoryName + "\\" + filename;
-        if (System.IO.File.Exists(path))
-        {
+        string path = new FileInfo(Assembly.GetExecutingAssembly().Location).DirectoryName + "\\" + filename;
+        if (File.Exists(path)) {
             return Assembly.LoadFile(path);
-        }
-        else
-        {
+        } else {
             Debug.LogError("CSharpConsole: Failed to load dependancy: '" + path + "'");
             return null;
         }
@@ -29,18 +25,22 @@ public static class Dependancy
 [Serializable]
 public class ConsoleExecBaseClass
 {
-    protected static string help = "The following are available:\nhelp // Displays that which you are currently reading.\nLog(message) // Log a message to this console and the (Alt+F2) KSP console, which also sends it to the log files.";
-    protected static string quit = "Oh please, what do you expect me to do when you type 'quit'?";
-    protected static string quti = "quti - Type 'quit' for more info.";
+    protected static string help = "The following commands are available:\n" +
+                                    "\t<b>help</b> - Displays that which you are currently reading.\n" +
+                                    "\t<b>Log(<i>message</i>)</b> - Log a message to this console and the Alt+F2 console (also sends it to the log files).\n" +
+                                    "\t<b>showhistory</b> - Displays a list of commands entered into this console.\n" +
+                                    "\t<b>clearhistory</b> - Clears the history of commands entered into this console.\n" +
+                                    "\t<b>clear</b> - Clears all text displayed in this console.\n" +
+                                    "\t<b>showconsole</b>, <b>hideconsole</b>, <b>toggleconsole</b> - Shows, hides, and toggles this console respectively.";
+    protected static string quit = "Oh please, what do you expect me to do when you enter <b>quit</b>?";
+    protected static string quti = "Enter <b>quit</b> for more info.";
     protected static string hello_hal
     {
-        get {
-            if (HighLogic.SaveFolder != null && HighLogic.SaveFolder != "")
-            {
+        get
+        {
+            if (HighLogic.SaveFolder != null && HighLogic.SaveFolder != "" && HighLogic.SaveFolder != "default") {
                 return "Hello, " + HighLogic.SaveFolder + ".";
-            }
-            else
-            {
+            } else {
                 return "Hello, Dave.";
             }
         }
@@ -49,13 +49,10 @@ public class ConsoleExecBaseClass
     {
         get
         {
-            if (CSharpConsoleHelper.IsVisible())
-            {
+            if (CSharpConsoleHelper.IsVisible()) {
                 CSharpConsoleHelper.HideConsole();
                 return "Console hidden.";
-            }
-            else
-            {
+            } else {
                 return "Console is already hidden!";
             }
         }
@@ -64,12 +61,9 @@ public class ConsoleExecBaseClass
     {
         get
         {
-            if (CSharpConsoleHelper.IsVisible())
-            {
+            if (CSharpConsoleHelper.IsVisible()) {
                 return "Console is already visible!";
-            }
-            else
-            {
+            } else {
                 CSharpConsoleHelper.ShowConsole();
                 return "Console shown.";
             }
@@ -79,13 +73,10 @@ public class ConsoleExecBaseClass
     {
         get
         {
-            if (CSharpConsoleHelper.IsVisible())
-            {
+            if (CSharpConsoleHelper.IsVisible()) {
                 CSharpConsoleHelper.HideConsole();
                 return "Console hidden.";
-            }
-            else
-            {
+            } else {
                 CSharpConsoleHelper.ShowConsole();
                 return "Console shown.";
             }
@@ -141,8 +132,8 @@ public class History
     }
     public void Clear()
     {
-        history.Clear();
         lastindex = -1;
+        history.Clear();
     }
     public List<string> Get()
     {
@@ -160,57 +151,40 @@ public class History
     {
         return lastindex;
     }
-    public bool IndexNext(ref string str) {
-        if (lastindex == -1)
-        {
-            return false;
-        }
-        else if (lastindex == history.Count - 1) {
-            str = Get(LastIndex());
-            return true;
-        }
-        else if (lastindex < history.Count - 1)
-        {
-            lastindex++;
-            str = Get(LastIndex());
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
     public bool IndexPrev(ref string str)
     {
         if (lastindex == -1) {
             return false;
-        }
-        else if (lastindex == 0)
-        {
-            str = Get(LastIndex());
+        } else if (lastindex == 0) {
+            str = Get(lastindex);
             return true;
-        }
-        else if (lastindex >= 0)
-        {
-            str = Get(LastIndex());
+        } else if (lastindex > 0) {
+            str = Get(lastindex);
             lastindex--;
             return true;
+        } else {
+            return false;
         }
-        else
-        {
+    }
+    public bool IndexNext(ref string str)
+    {
+        if (lastindex == -1) {
+            return false;
+        } else if (lastindex == history.Count - 1) {
+            str = Get(lastindex);
+            return true;
+        } else if (lastindex < history.Count - 1) {
+            str = Get(lastindex);
+            lastindex++;
+            return true;
+        } else {
             return false;
         }
     }
 }
 
 // HACK: Workaround class to tell the console not to show the returned value.
-public class InvisibleValue
-{
-    public InvisibleValue()
-    {
-
-    }
-}
+public class InvisibleValue { /* Nothing to see here... */ }
 
 [Serializable]
 public class ExtendedBehaviour : MonoBehaviour
