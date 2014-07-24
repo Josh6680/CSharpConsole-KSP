@@ -26,19 +26,33 @@ public static class Dependancy
 public class InvisibleValue { /* Nothing to see here... */ }
 
 [Serializable]
-public class ExtendedBehaviour : MonoBehaviour
+public class ExtendedBehaviour<T> : MonoBehaviour where T : Component
 {
+    // Contains the instance of this class.
+    protected static GameObject instance = null;
+
+    // Fetches the instance of this class.
+    public static T fetch
+    {
+        get
+        {
+            return instance.GetComponent<T>();
+        }
+    }
+
+    // Logs a debug message.
     public static void Log(string message)
     {
         Con.Log(message);
     }
 }
 
+// Entire purpose of this class is to log debug messages to wherever.
 public static class Con
 {
     public static void Log(string message)
     {
-        CSharpConsoleHelper.fetch.consoleText += message + "\n";
+        CSharpConsole.fetch.consoleText += message + "\n";
         Debug.Log(message);
     }
 }

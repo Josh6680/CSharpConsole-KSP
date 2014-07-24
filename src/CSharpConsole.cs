@@ -5,69 +5,43 @@ using System.IO;
 using System.Reflection;
 using UnityEngine;
 using KSP;
-using KSP.IO;
 using Mono;
 using Mono.CSharp;
 
 [KSPAddon(KSPAddon.Startup.Instantly, true)]
-class CSharpConsoleLoader : ExtendedBehaviour
+class CSharpConsoleLoader : MonoBehaviour
 {
     public CSharpConsoleLoader()
     {
+        // Manually load the Mono.CSharp library.
         Dependancy.Load("../lib/Mono.CSharp.dll.dat");
 
+        // Instantiate the console.
+        CSharpConsole.Initialize();
+
         // All loaded, now show the console.
-        CSharpConsoleHelper.ShowConsole();
+        CSharpConsole.ShowConsole();
     }
 }
 
-public static class CSharpConsoleHelper
+public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 {
-    private static GameObject instance = null;
-    public static CSharpConsole fetch
-    {
-        get
-        {
-            return instance.GetComponent<CSharpConsole>();
-        }
-    }
-    public static void ShowConsole()
+    public static bool Initialize()
     {
         if (instance == null) {
             instance = new GameObject("CSharpConsole", typeof(CSharpConsole));
             MonoBehaviour.DontDestroyOnLoad(instance);
+            return true;
+        } else {
+            Debug.LogWarning("CSharpConsole: Already initialized!");
+            return false;
         }
-        fetch.ShowConsole();
     }
-    public static void HideConsole()
-    {
-        fetch.HideConsole();
-    }
-    public static bool IsVisible()
-    {
-        return fetch.IsVisible();
-    }
-    public static List<string> GetHistory()
-    {
-        return fetch.history.Get();
-    }
-    public static void ClearHistory()
-    {
-        fetch.history.Clear();
-    }
-    public static void Clear()
-    {
-        fetch.consoleText = "<color=white>";
-    }
-}
-
-public class CSharpConsole : ExtendedBehaviour
-{
     public CSharpConsole()
-        : base()
     {
         Debug.Log("CSharpConsole: New instance created.");
     }
+
     private bool isVisible = false;
     public Rect winrect = new Rect(0, 0, 625, 450);
     public Vector2 scrollPosition = Vector2.zero;
@@ -109,7 +83,7 @@ public class CSharpConsole : ExtendedBehaviour
         GUI.EndGroup();
 
         if (GUI.Button(new Rect(0, winrect.height - 20, 50, 20), "Clear")) {
-            CSharpConsoleHelper.Clear();
+            Clear();
         }
 
         if (Event.current.isKey && Event.current.type == EventType.keyDown && (Event.current.keyCode == KeyCode.UpArrow || Event.current.keyCode == KeyCode.PageUp)) {
@@ -178,18 +152,53 @@ public class CSharpConsole : ExtendedBehaviour
             cmd = "";
         }
     }
-    public void ShowConsole()
+
+    // Shows the console and creates it if necessary.
+    public static void ShowConsole()
     {
-        isVisible = true;
-        Debug.Log("CSharpConsole: isVisible = " + isVisible.ToString());
+        if (instance == null) {
+            // For lazy peeps that didn't bother to Initialize() it.
+            Initialize();
+        }
+        fetch.isVisible = true;
+        Debug.Log("CSharpConsole: isVisible = " + fetch.isVisible.ToString());
     }
-    public void HideConsole()
+
+    // Hides the console, of course.
+    public static void HideConsole()
     {
-        isVisible = false;
-        Debug.Log("CSharpConsole: isVisible = " + isVisible.ToString());
+        fetch.isVisible = false;
+        Debug.Log("CSharpConsole: isVisible = " + fetch.isVisible.ToString());
     }
-    public bool IsVisible()
+
+    // Returns wether the console is visible.
+    public static bool IsVisible()
     {
-        return isVisible;
+        return fetch.isVisible;
+    }
+
+    // Gets a list of console command history.
+    public static List<string> GetHistory()
+    {
+        return fetch.history.Get();
+    }
+
+    // Clears the console command history, of course.
+    public static void ClearHistory()
+    {
+        fetch.history.Clear();
+    }
+
+    // Clears all text in the console and sets it to the default.
+    public static void Clear()
+    {
+        fetch.consoleText = "<color=white>";
+    }
+
+    // Resets the console to it's default state, more or less.
+    public static void Reset()
+    {
+        Clear();
+        ClearHistory();
     }
 }

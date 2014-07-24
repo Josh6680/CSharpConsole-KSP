@@ -11,6 +11,9 @@ using Mono.CSharp;
 [Serializable]
 public class ConsoleExecBaseClass
 {
+    // This class is used as the base class for anything executed by the console.
+    // Below are some "basic console commands" which can be used simply by entering their name.
+
     protected static string help = "The following commands are available:\n" +
                                     "\t<b>help</b> - Displays that which you are currently reading.\n" +
                                     "\t<b>Log(<i>message</i>)</b> - Log a message to this console and the Alt+F2 console (also sends it to the log files).\n" +
@@ -35,8 +38,8 @@ public class ConsoleExecBaseClass
     {
         get
         {
-            if (CSharpConsoleHelper.IsVisible()) {
-                CSharpConsoleHelper.HideConsole();
+            if (CSharpConsole.IsVisible()) {
+                CSharpConsole.HideConsole();
                 return "Console hidden.";
             } else {
                 return "Console is already hidden!";
@@ -47,10 +50,10 @@ public class ConsoleExecBaseClass
     {
         get
         {
-            if (CSharpConsoleHelper.IsVisible()) {
+            if (CSharpConsole.IsVisible()) {
                 return "Console is already visible!";
             } else {
-                CSharpConsoleHelper.ShowConsole();
+                CSharpConsole.ShowConsole();
                 return "Console shown.";
             }
         }
@@ -59,11 +62,11 @@ public class ConsoleExecBaseClass
     {
         get
         {
-            if (CSharpConsoleHelper.IsVisible()) {
-                CSharpConsoleHelper.HideConsole();
+            if (CSharpConsole.IsVisible()) {
+                CSharpConsole.HideConsole();
                 return "Console hidden.";
             } else {
-                CSharpConsoleHelper.ShowConsole();
+                CSharpConsole.ShowConsole();
                 return "Console shown.";
             }
         }
@@ -73,7 +76,7 @@ public class ConsoleExecBaseClass
         get
         {
             string history = "";
-            CSharpConsoleHelper.GetHistory().ForEach(a => history += a + "\n");
+            CSharpConsole.GetHistory().ForEach(a => history += a + "\n");
             return history;
         }
     }
@@ -81,7 +84,7 @@ public class ConsoleExecBaseClass
     {
         get
         {
-            CSharpConsoleHelper.ClearHistory();
+            CSharpConsole.ClearHistory();
             return new InvisibleValue();
         }
     }
@@ -89,7 +92,15 @@ public class ConsoleExecBaseClass
     {
         get
         {
-            CSharpConsoleHelper.Clear();
+            CSharpConsole.Clear();
+            return new InvisibleValue();
+        }
+    }
+    protected static InvisibleValue reset
+    {
+        get
+        {
+            CSharpConsole.Reset();
             return new InvisibleValue();
         }
     }
