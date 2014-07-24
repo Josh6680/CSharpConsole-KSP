@@ -30,7 +30,6 @@ using KSP;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("0.1")]
-[assembly: AssemblyFileVersion("0.1")]
+[assembly: AssemblyVersion("0.1.*")]
 
 [assembly: KSPAssembly("CSharp Debug Console by Josh", 0, 1)]

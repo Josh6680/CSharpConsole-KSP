@@ -37,14 +37,10 @@ public static class CSharpConsoleHelper
             instance = new GameObject("CSharpConsole", typeof(CSharpConsole));
             MonoBehaviour.DontDestroyOnLoad(instance);
         }
-        //instance.ShowConsole();
-        //instance.SendMessage("ShowConsole");
         fetch.ShowConsole();
     }
     public static void HideConsole()
     {
-        //instance.HideConsole();
-        //instance.SendMessage("HideConsole");
         fetch.HideConsole();
     }
     public static bool IsVisible()

@@ -60,7 +60,9 @@
     <None Include="Properties\app.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConsoleExecBaseClass.cs" />
     <Compile Include="CSharpConsole.cs" />
+    <Compile Include="History.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ConsoleUtils.cs" />
   </ItemGroup>
