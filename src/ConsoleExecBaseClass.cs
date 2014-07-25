@@ -104,6 +104,100 @@ public class ConsoleExecBaseClass
             return new InvisibleValue();
         }
     }
+    protected static string showusing
+    {
+        get
+        {
+            return Evaluator.GetUsing();
+        }
+    }
+    public static void ShowUsing()
+    {
+        Con.Log(showusing);
+    }
+
+    protected static string showvars
+    {
+        get
+        {
+            return Evaluator.GetVars();
+        }
+    }
+    public static void ShowVars()
+    {
+        Con.Log(showvars);
+    }
+
+    public static CompiledMethod Compile(string input)
+    {
+        return Evaluator.Compile(input);
+    }
+    public static string Compile(string input, out CompiledMethod compiled)
+    {
+        return Evaluator.Compile(input, out compiled);
+    }
+    public static object Evaluate(string input)
+    {
+        return Evaluator.Evaluate(input);
+    }
+    public static string Evaluate(string input, out object result, out bool result_set)
+    {
+        return Evaluator.Evaluate(input, out result, out result_set);
+    }
+    public static bool Run(string statement)
+    {
+        return Evaluator.Run(statement);
+    }
+    public static void Interrupt()
+    {
+        Evaluator.Interrupt();
+    }
+    public static void ReferenceAssembly(Assembly a)
+    {
+        Evaluator.ReferenceAssembly(a);
+    }
+
+    public static string ContinuationPrompt
+    {
+        get
+        {
+            return InteractiveBase.ContinuationPrompt;
+        }
+    }
+    public static TextWriter Error
+    {
+        get
+        {
+            return InteractiveBase.Error;
+        }
+    }
+    public static TextWriter Output
+    {
+        get
+        {
+            return InteractiveBase.Output;
+        }
+    }
+    public static string Prompt
+    {
+        get
+        {
+            return InteractiveBase.Prompt;
+        }
+    }
+
+    public static void LoadAssembly(string assembly)
+    {
+        InteractiveBase.LoadAssembly(assembly);
+    }
+    public static void LoadPackage(string pkg)
+    {
+        InteractiveBase.LoadPackage(pkg);
+    }
+    public static TimeSpan Time(InteractiveBase.Simple a)
+    {
+        return InteractiveBase.Time(a);
+    }
 
     public static InvisibleValue Log(string message)
     {
