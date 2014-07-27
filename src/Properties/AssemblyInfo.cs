@@ -6,12 +6,12 @@ using KSP;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Josh's CSharp Debug Console")]
-[assembly: AssemblyDescription("Josh's CSharp Debug Console Plugin for KSP")]
+[assembly: AssemblyTitle("Interactive C# Console")]
+[assembly: AssemblyDescription("Josh's Interactive C# Console plugin for KSP")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("CSharp Debug Console")]
-[assembly: AssemblyCopyright("GNU General Public License v2.0")]
+[assembly: AssemblyProduct("Interactive C# Console")]
+[assembly: AssemblyCopyright("Josh")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,4 +32,4 @@ using KSP;
 //
 [assembly: AssemblyVersion("0.1.*")]
 
-[assembly: KSPAssembly("CSharp Debug Console by Josh", 0, 1)]
+[assembly: KSPAssembly("Interactive C# Console by Josh", 0, 1)]
