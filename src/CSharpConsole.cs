@@ -72,113 +72,197 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
     }
 
     private bool isVisible = false;
-    public Rect winrect = new Rect(0, 0, 625, 450);
-    public Vector2 scrollPosition = Vector2.zero;
-    public string consoleText = "<color=white>";
+    public Rect windowRect = new Rect(0, 0, 640, 450);
+    private Rect titleBarRect
+    {
+        get
+        {
+            return new Rect(0, 0, windowRect.width - 21, 20);
+        }
+    }
+    private Vector2 scrollPosition = Vector2.zero;
+    private bool autoScroll = true;
+
+    private string consoleText = "<color=white>";
     private string cmd = "";
-    public History history = new History();
+    private History history = new History();
+
     public void Update()
     {
+        // Toggle the console visibility with the "`" (or "~") key.
         if (Input.GetKeyDown(KeyCode.BackQuote)) {
             isVisible = !isVisible;
             Debug.Log("CSharpConsole: isVisible = " + isVisible.ToString());
         }
+
+        // TODO: If only there was some way to register these key events here while the TextField is focused...
+        /*if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.PageUp)) {
+            // Get previous input history item and set it as current.
+            history.IndexPrev(ref cmd);
+        } else if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.PageDown)) {
+            // Get next input history item and set it as current.
+            history.IndexNext(ref cmd);
+        }*/
     }
+
     public void OnGUI()
     {
         if (isVisible) {
-            winrect = GUI.Window(888888888, winrect, wnd, "Interactive C# Console");
+            windowRect = GUI.Window(GUIUtility.GetControlID(FocusType.Passive, windowRect), windowRect, ConsoleWindow, "Interactive C# Console");
         }
     }
-    private void wnd(int windowID)
+    private void ConsoleWindow(int windowID)
     {
-        GUI.DragWindow(new Rect(0, 0, winrect.width - 21, 20));
+        // Make sure the default text coloring is white.
+        GUI.contentColor = Color.white;
 
-        if (GUI.Button(new Rect(winrect.width - 22, 2, 20, 20), "x")) {
+        // The "x" (close) button in the top-right corner.
+        if (GUI.Button(new Rect(windowRect.width - 28, 2, 21, 18), "x")) {
             HideConsole();
         }
 
-        GUI.BeginGroup(new Rect(0, 0, winrect.width, winrect.height - 20));
-        scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, false, GUILayout.Width(winrect.width - 12), GUILayout.Height(winrect.height - 21 * 2), GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(false));
-        GUILayout.Label(consoleText + "</color>", new GUIStyle()
+        if (autoScroll) {
+            // If autoScroll enabled, set scrollPosition to the bottom.
+            scrollPosition = new Vector2(scrollPosition.x, float.MaxValue);
+        }
+
+        // Begin scroll view block.
+        scrollPosition = GUILayout.BeginScrollView(scrollPosition);
         {
-            richText = true,
-            wordWrap = false,
-            clipping = TextClipping.Overflow,
-            stretchHeight = true,
-            stretchWidth = true
-        });
+            // Display the console text.
+            GUILayout.Label(consoleText + "</color>", new GUIStyle()
+            {
+                richText = true,
+                wordWrap = false,
+                clipping = TextClipping.Overflow,
+                stretchHeight = true,
+                stretchWidth = true
+            });
+        }
         GUILayout.EndScrollView();
-        GUI.EndGroup();
 
-        if (GUI.Button(new Rect(0, winrect.height - 20, 50, 20), "Clear")) {
-            Clear();
+        // Begin horizontal layout block.
+        GUILayout.BeginHorizontal();
+        {
+            // Clear button, resets the console text.
+            if (GUILayout.Button("Clear", GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(false))) {
+                Clear();
+            }
+
+            // Toggle button for automatic scrolling.
+            autoScroll = GUILayout.Toggle(autoScroll, "Autoscroll", GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(false));
+
+            // TODO: Have to check for key events here instead of Update() so that the TextField doesn't steal the event!
+            if (Event.current.isKey && Event.current.type == EventType.keyDown && (Event.current.keyCode == KeyCode.UpArrow || Event.current.keyCode == KeyCode.PageUp)) {
+                // Get previous input history item and set it as current.
+                history.IndexPrev(ref cmd);
+            } else if (Event.current.isKey && Event.current.type == EventType.keyDown && (Event.current.keyCode == KeyCode.DownArrow || Event.current.keyCode == KeyCode.PageDown)) {
+                // Get next input history item and set it as current.
+                history.IndexNext(ref cmd);
+            }
+
+            // C# input box!
+            cmd = GUILayout.TextField(cmd, int.MaxValue, GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(true));
+
+            // Submit button.
+            if (GUILayout.Button("Submit", GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(false)) || (Event.current.isKey && (Event.current.keyCode == KeyCode.KeypadEnter || Event.current.keyCode == KeyCode.Return))) {
+                // Print the code about to be executed to the console.
+                Print("] " + cmd + "\n");
+
+                // Add this to the console input history.
+                fetch.history.Add(cmd);
+
+                // Now, execute the code.
+                Execute(cmd);
+
+                // Clear the input box.
+                cmd = "";
+            }
         }
+        GUILayout.EndHorizontal();
 
-        if (Event.current.isKey && Event.current.type == EventType.keyDown && (Event.current.keyCode == KeyCode.UpArrow || Event.current.keyCode == KeyCode.PageUp)) {
-            history.IndexPrev(ref cmd);
-        } else if (Event.current.isKey && Event.current.type == EventType.keyDown && (Event.current.keyCode == KeyCode.DownArrow || Event.current.keyCode == KeyCode.PageDown)) {
-            history.IndexNext(ref cmd);
-        }
+        // Make this window draggable by it's titlebar.
+        GUI.DragWindow(titleBarRect);
+    }
 
-        cmd = GUI.TextField(new Rect(50, winrect.height - 20, winrect.width - 50 - 50, 20), cmd);
-        if (GUI.Button(new Rect(winrect.width - 50, winrect.height - 20, 50, 20), "Submit") || (Event.current.isKey && (Event.current.keyCode == KeyCode.KeypadEnter || Event.current.keyCode == KeyCode.Return))) {
-            consoleText += "] " + cmd + "\n";
-            history.Add(cmd);
+    // Executes the specified C# code.
+    public static void Execute(string code)
+    {
+        // Really don't want this section to crash out.
+        // Any caught errors will be logged to the console.
+        try {
+            // The Evaluator will use our custom class as the base class (in which scope and context the entered code is executed).
+            // TODO: This could probably be moved to plugin load where it will only be set once (might save some overhead?).
+            Evaluator.InteractiveBaseClass = typeof(ConsoleExecBaseClass);
+
+            // An attempt at pre-referencing some assemblies.
+            // Additional assembies can be referenced in-game by executing:
+            // LoadAssembly("Assembly_Name");
+            // using Namespace_Name;
+            Evaluator.ReferenceAssembly(Assembly.GetExecutingAssembly());
+            Evaluator.ReferenceAssembly(typeof(System.Object).Assembly);
+            Evaluator.ReferenceAssembly(typeof(MonoBehaviour).Assembly);
+            Evaluator.ReferenceAssembly(typeof(PSystemBody).Assembly);
+
+            // TODO: Some of these actually don't seem to work "out of the box", KSP being one of them.
+            string usings = @"
+                using System;
+                using System.Collections.Generic;
+                using System.Text;
+                using System.Xml;
+                using KSP;
+                using UnityEngine;
+                using System.Reflection;
+                using System.Linq;";
+
             try {
-                Evaluator.ReferenceAssembly(Assembly.GetExecutingAssembly());
-                Evaluator.ReferenceAssembly(typeof(System.Object).Assembly);
-                Evaluator.ReferenceAssembly(typeof(MonoBehaviour).Assembly);
-                Evaluator.ReferenceAssembly(typeof(PSystemBody).Assembly);
-                //Evaluator.ReferenceAssembly(typeof(JUtil).Assembly);
-                string usings = @"
-                    using System;
-                    using System.Collections.Generic;
-                    using System.Text;
-                    using System.Xml;
-                    using UnityEngine;
-                    using KSP;
-                    using System.Reflection;";
-                //using System.Linq;
-                //using JUtils;";
-                bool result = false;
-                try {
-                    result = Evaluator.Run(usings);
-                } catch (Exception e) {
-                    consoleText += "<color=red>Run imports failed: " + e.ToString() + "</color>\n";
-                    Debug.LogException(e);
-                }
-                //consoleText += "Import result = " + result.ToString() + "\n";
-                //Debug.Log("Import result = " + result.ToString());
-                bool ress;
-                object res;
-                StringWriter err = new StringWriter();
-                Evaluator.InteractiveBaseClass = typeof(ConsoleExecBaseClass);
-                Evaluator.MessageOutput = err;
-                string s = Evaluator.Evaluate(cmd + ";", out res, out ress);
-                string error = err.ToString();
-                if (error.Length > 0) {
-                    consoleText += "<color=red>" + error + "</color>\n";
-                    Debug.LogError(error);
-                } else {
-                    if (ress) {
-                        if (res.GetType().Equals(typeof(InvisibleValue))) {
-                            // HACK: Workaround to explicitly disable showing the returned value.
-                        } else if (res != null) {
-                            consoleText += res.ToString() + "\n";
-                            Debug.Log(res.ToString());
-                        } else {
-                            consoleText += "<color=red><b><i>null</i></b></color>\n";
-                        }
-                    } else {
-                        consoleText += "<color=#EEEEEE><b><i>no result</i></b></color>\n";
-                    }
-                }
+                // Attempt to run the using statements.
+                Evaluator.Run(usings);
             } catch (Exception ex) {
-                consoleText += "<color=red>" + ex.ToString() + "</color>\n";
+                // Log the error if it failed for whatever reason.
+                Print("<color=red>Run imports failed: " + ex.ToString() + "</color>\n");
                 Debug.LogException(ex);
             }
-            cmd = "";
+
+            object res; // The returned value.
+            bool ress; // Is the return value set?
+
+            // Redirect the Evaluator message output.
+            StringWriter err = new StringWriter();
+            Evaluator.MessageOutput = err;
+
+            // Evaluate the code, adding an extra semicolon just in case, and get the results.
+            string s = Evaluator.Evaluate(code + ";", out res, out ress);
+
+            // Get any errors that may have ocurred during execution.
+            string error = err.ToString();
+
+            // Check if we got an error returned.
+            if (error.Length > 0) {
+                // Log the error message.
+                Print("<color=red>" + error + "</color>\n");
+                Debug.LogError(error);
+            } else {
+                if (ress) {
+                    if (res.GetType().Equals(typeof(InvisibleValue))) {
+                        // HACK: Workaround to explicitly disable showing the returned value.
+                    } else if (res != null) {
+                        // Print the returned object as a string.
+                        Print(res.ToString() + "\n");
+                        Debug.Log(res.ToString());
+                    } else {
+                        // A null value was returned.
+                        Print("<color=red><b><i>null</i></b></color>\n");
+                    }
+                } else {
+                    // The return value was not set (most likely because it was a function with void return).
+                    Print("<color=#EEEEEE><b><i>no result</i></b></color>\n");
+                }
+            }
+        } catch (Exception ex) {
+            // Log any uncaught error messages.
+            Print("<color=red>" + ex.ToString() + "</color>\n");
+            Debug.LogException(ex);
         }
     }
 
@@ -190,14 +274,14 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
             Initialize();
         }
         fetch.isVisible = true;
-        Debug.Log("CSharpConsole: isVisible = " + fetch.isVisible.ToString());
+        //Debug.Log("CSharpConsole: isVisible = " + fetch.isVisible.ToString());
     }
 
     // Hides the console, of course.
     public static void HideConsole()
     {
         fetch.isVisible = false;
-        Debug.Log("CSharpConsole: isVisible = " + fetch.isVisible.ToString());
+        //Debug.Log("CSharpConsole: isVisible = " + fetch.isVisible.ToString());
     }
 
     // Returns wether the console is visible.
@@ -229,5 +313,11 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
     {
         Clear();
         ClearHistory();
+    }
+
+    // Prints the specified text to the console.
+    public static void Print(string message)
+    {
+        fetch.consoleText += message;
     }
 }

@@ -70,7 +70,7 @@ public class ExtendedBehaviour<T> : MonoBehaviour where T : Component
     }
 
     // Logs a debug message.
-    public static void Log(string message)
+    private static void Log(string message)
     {
         Con.Log(message);
     }
@@ -81,7 +81,7 @@ public static class Con
 {
     public static void Log(string message)
     {
-        CSharpConsole.fetch.consoleText += message + "\n";
+        CSharpConsole.Print(message + "\n");
         Debug.Log(message);
     }
 }

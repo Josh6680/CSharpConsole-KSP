@@ -43,13 +43,28 @@ public class ConsoleExecBaseClass
     // This class is used as the base class for anything executed by the console.
     // Below are some "basic console commands" which can be used simply by entering their name.
 
-    protected static string help = "The following commands are available:\n" +
-                                    "\t<b>help</b> - Displays that which you are currently reading.\n" +
-                                    "\t<b>Log(<i>message</i>)</b> - Log a message to this console and the Alt+F2 console (also sends it to the log files).\n" +
-                                    "\t<b>showhistory</b> - Displays a list of commands entered into this console.\n" +
-                                    "\t<b>clearhistory</b> - Clears the history of commands entered into this console.\n" +
-                                    "\t<b>clear</b> - Clears all text displayed in this console.\n" +
-                                    "\t<b>showconsole</b>, <b>hideconsole</b>, <b>toggleconsole</b> - Shows, hides, and toggles this console respectively.";
+    protected static string about
+    {
+        get
+        {
+            return "<< Interactive C# Console v" + Assembly.GetExecutingAssembly().GetName().Version.ToString() + " by Josh >>";
+        }
+    }
+    protected static string help
+    {
+        get
+        {
+            return about + "\n" +
+                "The following commands are available:\n" +
+                "\t<b>help</b> - Displays that which you are currently reading.\n" +
+                "\t<b>Log(<i>message</i>)</b> - Log a message to this console and the Alt+F2 console (also sends it to the log files).\n" +
+                "\t<b>showhistory</b> - Displays a list of commands entered into this console.\n" +
+                "\t<b>clearhistory</b> - Clears the history of commands entered into this console.\n" +
+                "\t<b>clear</b> - Clears all text displayed in this console.\n" +
+                "\t<b>showconsole</b>, <b>hideconsole</b>, <b>toggleconsole</b> - Shows, hides, and toggles this console respectively.\n" +
+                "\t<b>LoadAssembly(<i>assembly_name</i>)</b> - Loads / references the specified assembly by name.";
+        }
+    }
     protected static string quit = "Oh please, what do you expect me to do when you enter <b>quit</b>?";
     protected static string quti = "Enter <b>quit</b> for more info.";
     protected static string hello_hal
