@@ -121,11 +121,6 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
             HideConsole();
         }
 
-        if (autoScroll) {
-            // If autoScroll enabled, set scrollPosition to the bottom.
-            scrollPosition = new Vector2(scrollPosition.x, float.MaxValue);
-        }
-
         // Begin scroll view block.
         scrollPosition = GUILayout.BeginScrollView(scrollPosition);
         {
@@ -319,5 +314,10 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
     public static void Print(string message)
     {
         fetch.consoleText += message;
+
+        if (fetch.autoScroll) {
+            // If autoScroll enabled, set scrollPosition to the bottom.
+            fetch.scrollPosition = new Vector2(fetch.scrollPosition.x, float.MaxValue);
+        }
     }
 }
