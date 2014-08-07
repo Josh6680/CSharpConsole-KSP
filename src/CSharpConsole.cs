@@ -72,7 +72,7 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
     }
 
     private bool isVisible = false;
-    public Rect windowRect = new Rect(0, 0, 640, 450);
+    public Rect windowRect = new Rect(0, 0, 650, 450);
     private Rect titleBarRect
     {
         get
@@ -121,20 +121,25 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
             HideConsole();
         }
 
-        // Begin scroll view block.
-        scrollPosition = GUILayout.BeginScrollView(scrollPosition);
+        // Begin vertical block with textArea skin.
+        GUILayout.BeginVertical(GUI.skin.textArea, GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
         {
-            // Display the console text.
-            GUILayout.Label(consoleText + "</color>", new GUIStyle()
+            // Begin scroll view block.
+            scrollPosition = GUILayout.BeginScrollView(scrollPosition);
             {
-                richText = true,
-                wordWrap = false,
-                clipping = TextClipping.Overflow,
-                stretchHeight = true,
-                stretchWidth = true
-            });
+                // Display the console text.
+                GUILayout.TextArea(consoleText + "</color>", int.MaxValue, new GUIStyle()
+                {
+                    richText = true,
+                    wordWrap = false,
+                    clipping = TextClipping.Overflow,
+                    stretchHeight = true,
+                    stretchWidth = true
+                });
+            }
+            GUILayout.EndScrollView();
         }
-        GUILayout.EndScrollView();
+        GUILayout.EndVertical();
 
         // Begin horizontal layout block.
         GUILayout.BeginHorizontal();
@@ -157,7 +162,8 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
             }
 
             // C# input box!
-            cmd = GUILayout.TextField(cmd, int.MaxValue, GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(true));
+            // TODO: Remove the hardcoded "magic" number 200 in the width!
+            cmd = GUILayout.TextField(cmd, int.MaxValue, GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(false), GUILayout.Width(windowRect.width - 200));
 
             // Submit button.
             if (GUILayout.Button("Submit", GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(false)) || (Event.current.isKey && (Event.current.keyCode == KeyCode.KeypadEnter || Event.current.keyCode == KeyCode.Return))) {
