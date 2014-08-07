@@ -84,4 +84,30 @@ public static class Con
         CSharpConsole.Print(message + "\n");
         Debug.Log(message);
     }
+
+	static readonly Dictionary<LogType, string> logTypeColors = new Dictionary<LogType, string>
+	{
+		{ LogType.Assert, "orange" },
+		{ LogType.Error, "#9C0000FF" },
+		{ LogType.Exception, "red" },
+		{ LogType.Log, "white" },
+		{ LogType.Warning, "yellow" },
+	};
+
+    // TODO: I should probably add more comments like this...
+    /// <summary>
+	/// Records a log from the log callback.
+	/// </summary>
+	/// <param name="message">The message.</param>
+	/// <param name="stackTrace">Trace of where the message came from.</param>
+	/// <param name="type">Type of message (error, exception, warning, assert).</param>
+	public static void HandleLog(string message, string stackTrace, LogType type)
+	{
+        string output = "<color=" + logTypeColors[type] + ">[" + type.ToString() + "]: " + message;
+        if (stackTrace != null && stackTrace != "") {
+            output += "\n" + stackTrace;
+        }
+        output += "</color>\n";
+        CSharpConsole.Print(output);
+	}
 }

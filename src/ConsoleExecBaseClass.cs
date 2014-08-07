@@ -248,4 +248,31 @@ public class ConsoleExecBaseClass
         Con.Log(message);
         return new InvisibleValue();
     }
+
+    // Console variables
+    private static bool _con_hooklog = false;
+    public static bool con_hooklog
+    {
+        get
+        {
+            return _con_hooklog;
+        }
+        set
+        {
+            if (value) {
+                if (_con_hooklog) {
+                    Con.Log("The log is already hooked!");
+                } else {
+                    KSPLog.AddLogCallback(Con.HandleLog);
+                }
+            } else {
+                if (_con_hooklog) {
+                    KSPLog.RemoveLogCallback(Con.HandleLog);
+                } else {
+                    Con.Log("The log is already <u>not</u> hooked!");
+                }
+            }
+            _con_hooklog = value;
+        }
+    }
 }
