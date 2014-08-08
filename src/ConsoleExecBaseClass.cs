@@ -47,9 +47,17 @@ public class ConsoleExecBaseClass
     {
         get
         {
-            return "<< Interactive C# Console v" + Assembly.GetExecutingAssembly().GetName().Version.ToString() + " by Josh >>";
+#if DEBUG
+            string buildType = " [Debug Build]";
+#elif RELEASE
+            string buildType = " [Release Build]";
+#else
+            string buildType = " [Unknown Build]";
+#endif
+            return "<< Interactive C# Console v" + Assembly.GetExecutingAssembly().GetName().Version.ToString() + buildType + " by Josh >>";
         }
     }
+    protected static string version { get { return about; } }
     protected static string help
     {
         get
