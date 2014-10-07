@@ -1,5 +1,6 @@
 ﻿/*
     Interactive C# Console
+    https://github.com/Josh6680/CSharpConsole-KSP
     Copyright (C) 2014 Josh
 
     This program is free software; you can redistribute it and/or modify
@@ -86,6 +87,11 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
     private string consoleText = "<color=white>";
     private string cmd = "";
     private History history = new History();
+    private string[] completions = null;
+    private string completionPrefix = "";
+    private bool updateCompletions = false;
+    private GUIStyle autoCompleteSkin = null;
+    private Texture2D skinBackground = null;
 
     public void Update()
     {
@@ -93,6 +99,11 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
         if (Input.GetKeyDown(KeyCode.BackQuote)) {
             isVisible = !isVisible;
             Debug.Log("CSharpConsole: isVisible = " + isVisible.ToString());
+        }
+
+        if (updateCompletions && !cmd.StartsWith("using ")) {
+            completions = Evaluator.GetCompletions(cmd, out completionPrefix);
+            updateCompletions = false;
         }
 
         // TODO: If only there was some way to register these key events here while the TextField is focused...
@@ -107,8 +118,51 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 
     public void OnGUI()
     {
+        // Create the auto complete skin the first time.
+        // This has to be done in OnGUI() due to restrictions in place by Unity Engine.
+        if (autoCompleteSkin == null) {
+            skinBackground = new Texture2D(1, 1, TextureFormat.Alpha8, false);
+
+            autoCompleteSkin = new GUIStyle(GUI.skin.label);
+            autoCompleteSkin.alignment = TextAnchor.MiddleLeft;
+            autoCompleteSkin.richText = false;
+            autoCompleteSkin.wordWrap = false;
+            autoCompleteSkin.stretchWidth = true;
+            autoCompleteSkin.stretchHeight = false;
+
+            autoCompleteSkin.normal = new GUIStyleState()
+            {
+                background = skinBackground,
+                textColor = Color.white
+            };
+
+            autoCompleteSkin.active = new GUIStyleState()
+            {
+                background = skinBackground,
+                textColor = new Color(0, 0.5f, 0, 1)
+            };
+
+            autoCompleteSkin.focused = new GUIStyleState()
+            {
+                background = skinBackground,
+                textColor = Color.green
+            };
+
+            autoCompleteSkin.hover = new GUIStyleState()
+            {
+                background = skinBackground,
+                textColor = Color.green
+            };
+
+            autoCompleteSkin.border = new RectOffset(0, 0, 0, 0);
+            autoCompleteSkin.padding = new RectOffset(3, 0, 0, 0);
+        }
+
         if (isVisible) {
             windowRect = GUI.Window(GUIUtility.GetControlID(FocusType.Passive, windowRect), windowRect, ConsoleWindow, "Interactive C# Console");
+            if (completions != null && completions.Length > 0) {
+                GUI.Window(GUIUtility.GetControlID(FocusType.Passive), new Rect(windowRect.x + windowRect.width / 2, windowRect.y + windowRect.height, 200, 200), AutoCompleteWindow, "", GUI.skin.box);
+            }
         }
     }
     private void ConsoleWindow(int windowID)
@@ -163,7 +217,12 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 
             // C# input box!
             // TODO: Remove the hardcoded "magic" number 200 in the width!
-            cmd = GUILayout.TextField(cmd, int.MaxValue, GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(false), GUILayout.Width(windowRect.width - 200));
+            string input = GUILayout.TextField(cmd, int.MaxValue, GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(false), GUILayout.Width(windowRect.width - 200));
+
+            if (input != cmd) {
+                cmd = input;
+                updateCompletions = true;
+            }
 
             // Submit button.
             if (GUILayout.Button("Submit", GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(false)) || (Event.current.isKey && (Event.current.keyCode == KeyCode.KeypadEnter || Event.current.keyCode == KeyCode.Return))) {
@@ -184,6 +243,26 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 
         // Make this window draggable by it's titlebar.
         GUI.DragWindow(titleBarRect);
+    }
+    private void AutoCompleteWindow(int windowID)
+    {
+        int y = 0;
+        foreach (string str in completions) {
+            if (completionPrefix != null) {
+                if (GUI.Button(new Rect(0, y, 200, 20), completionPrefix + str, autoCompleteSkin)) {
+                    cmd += str;
+                    completions = null;
+                    completionPrefix = "";
+                }
+            } else {
+                if (GUI.Button(new Rect(0, y, 200, 20), str, autoCompleteSkin)) {
+                    cmd += str;
+                    completions = null;
+                    completionPrefix = "";
+                }
+            }
+            y += 18;
+        }
     }
 
     // Executes the specified C# code.
@@ -262,7 +341,7 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
             }
         } catch (Exception ex) {
             // Log any uncaught error messages.
-            Print("<color=red>" + ex.ToString() + "</color>\n");
+            Print(ex.ToString() + "\n", LogType.Exception);
             Debug.LogException(ex);
         }
     }
@@ -325,5 +404,31 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
             // If autoScroll enabled, set scrollPosition to the bottom.
             fetch.scrollPosition = new Vector2(fetch.scrollPosition.x, float.MaxValue);
         }
+    }
+
+    /// <summary>
+    /// Prints the passed message to the console with the color mapped to the LogType.
+    /// </summary>
+    /// <param name="message">The message to print to the console.</param>
+    /// <param name="type">The LogType mapped to the color defined in Con.logTypeColors</param>
+    public static void Print(string message, LogType type)
+    {
+        Print("<color=" + Con.logTypeColors[type] + ">" + message + "</color>");
+    }
+
+    /// <summary>
+    /// Log callback method that prints the log message to the console.
+    /// </summary>
+    /// <param name="message">The log message to be shown.</param>
+    /// <param name="stackTrace">Trace of where the log message came from.</param>
+    /// <param name="type">Type of log message (error, exception, warning, assert).</param>
+    public static void HandleLog(string message, string stackTrace, LogType type)
+    {
+        string output = "[" + type.ToString() + "]: " + message;
+        if (stackTrace != null && stackTrace != "") {
+            output += "\n" + stackTrace;
+        }
+        output += "\n";
+        Print(output, type);
     }
 }

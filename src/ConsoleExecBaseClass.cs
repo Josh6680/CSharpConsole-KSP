@@ -1,5 +1,6 @@
 ﻿/*
     Interactive C# Console
+    https://github.com/Josh6680/CSharpConsole-KSP
     Copyright (C) 2014 Josh
 
     This program is free software; you can redistribute it and/or modify
@@ -271,13 +272,13 @@ public class ConsoleExecBaseClass
                 if (_con_hooklog) {
                     Con.Log("The log is already hooked!");
                 } else {
-                    KSPLog.AddLogCallback(Con.HandleLog);
+                    KSPLog.AddLogCallback(CSharpConsole.HandleLog);
                 }
             } else {
                 if (_con_hooklog) {
-                    KSPLog.RemoveLogCallback(Con.HandleLog);
+                    KSPLog.RemoveLogCallback(CSharpConsole.HandleLog);
                 } else {
-                    Con.Log("The log is already <u>not</u> hooked!");
+                    Con.Log("The log is already <b>un</b>hooked!");
                 }
             }
             _con_hooklog = value;

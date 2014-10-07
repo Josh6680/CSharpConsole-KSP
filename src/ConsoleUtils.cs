@@ -1,5 +1,6 @@
 ﻿/*
     Interactive C# Console
+    https://github.com/Josh6680/CSharpConsole-KSP
     Copyright (C) 2014 Josh
 
     This program is free software; you can redistribute it and/or modify
@@ -76,38 +77,43 @@ public class ExtendedBehaviour<T> : MonoBehaviour where T : Component
     }
 }
 
-// Entire purpose of this class is to log debug messages to wherever.
+/// <summary>
+/// Provides convenient utilities for logging debug messages.
+/// </summary>
 public static class Con
 {
-    public static void Log(string message)
-    {
-        CSharpConsole.Print(message + "\n");
-        Debug.Log(message);
-    }
-
-	static readonly Dictionary<LogType, string> logTypeColors = new Dictionary<LogType, string>
+    public static readonly Dictionary<LogType, string> logTypeColors = new Dictionary<LogType, string>
 	{
-		{ LogType.Assert, "orange" },
 		{ LogType.Error, "#9C0000FF" },
-		{ LogType.Exception, "red" },
-		{ LogType.Log, "white" },
+		{ LogType.Assert, "orange" },
 		{ LogType.Warning, "yellow" },
+		{ LogType.Log, "white" },
+		{ LogType.Exception, "red" },
 	};
 
-    // TODO: I should probably add more comments like this...
-    /// <summary>
-	/// Records a log from the log callback.
-	/// </summary>
-	/// <param name="message">The message.</param>
-	/// <param name="stackTrace">Trace of where the message came from.</param>
-	/// <param name="type">Type of message (error, exception, warning, assert).</param>
-	public static void HandleLog(string message, string stackTrace, LogType type)
-	{
-        string output = "<color=" + logTypeColors[type] + ">[" + type.ToString() + "]: " + message;
-        if (stackTrace != null && stackTrace != "") {
-            output += "\n" + stackTrace;
+    public static void Log(string message)
+    {
+        if (message != null) {
+            CSharpConsole.Print(message + "\n");
+            Debug.Log(message);
+        } else {
+#if DEBUG
+            CSharpConsole.Print("[Debug] A null message log was attempted!\n", LogType.Warning);
+            Debug.LogWarning("CSharpConsole: A null message log was attempted!");
+#endif
         }
-        output += "</color>\n";
-        CSharpConsole.Print(output);
-	}
+    }
+
+    public static void Log(string message, LogType type)
+    {
+        if (message != null) {
+            CSharpConsole.Print(message + "\n");
+            Debug.Log(message);
+        } else {
+#if DEBUG
+            CSharpConsole.Print("[Debug] A null message log was attempted!\n", LogType.Warning);
+            Debug.LogWarning("CSharpConsole: A null message log was attempted!");
+#endif
+        }
+    }
 }
