@@ -37,6 +37,8 @@ using UnityEngine;
 using KSP;
 using Mono;
 using Mono.CSharp;
+using Event = UnityEngine.Event;
+using Evaluator = CSharpConsoleKSP.Evaluator;
 
 [KSPAddon(KSPAddon.Startup.Instantly, true)]
 class CSharpConsoleLoader : MonoBehaviour
@@ -102,7 +104,7 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
         }
 
         if (updateCompletions && !cmd.StartsWith("using ")) {
-            completions = Evaluator.GetCompletions(cmd, out completionPrefix);
+            completions = Evaluator.fetch.GetCompletions(cmd, out completionPrefix);
             updateCompletions = false;
         }
 
@@ -273,16 +275,16 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
         try {
             // The Evaluator will use our custom class as the base class (in which scope and context the entered code is executed).
             // TODO: This could probably be moved to plugin load where it will only be set once (might save some overhead?).
-            Evaluator.InteractiveBaseClass = typeof(ConsoleExecBaseClass);
+            Evaluator.fetch.InteractiveBaseClass = typeof(ConsoleExecBaseClass);
 
             // An attempt at pre-referencing some assemblies.
             // Additional assembies can be referenced in-game by executing:
             // LoadAssembly("Assembly_Name");
             // using Namespace_Name;
-            Evaluator.ReferenceAssembly(Assembly.GetExecutingAssembly());
-            Evaluator.ReferenceAssembly(typeof(System.Object).Assembly);
-            Evaluator.ReferenceAssembly(typeof(MonoBehaviour).Assembly);
-            Evaluator.ReferenceAssembly(typeof(PSystemBody).Assembly);
+            Evaluator.fetch.ReferenceAssembly(Assembly.GetExecutingAssembly());
+            Evaluator.fetch.ReferenceAssembly(typeof(System.Object).Assembly);
+            Evaluator.fetch.ReferenceAssembly(typeof(MonoBehaviour).Assembly);
+            Evaluator.fetch.ReferenceAssembly(typeof(PSystemBody).Assembly);
 
             // TODO: Some of these actually don't seem to work "out of the box", KSP being one of them.
             string usings = @"
@@ -297,7 +299,7 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 
             try {
                 // Attempt to run the using statements.
-                Evaluator.Run(usings);
+                Evaluator.fetch.Run(usings);
             } catch (Exception ex) {
                 // Log the error if it failed for whatever reason.
                 Print("<color=red>Run imports failed: " + ex.ToString() + "</color>\n");
@@ -309,10 +311,11 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 
             // Redirect the Evaluator message output.
             StringWriter err = new StringWriter();
-            Evaluator.MessageOutput = err;
+            //Evaluator.fetch.MessageOutput = err;
+            CSharpConsoleKSP.EvaluatorPrinter.output = err;
 
             // Evaluate the code, adding an extra semicolon just in case, and get the results.
-            string s = Evaluator.Evaluate(code + ";", out res, out ress);
+            string s = Evaluator.fetch.Evaluate(code + ";", out res, out ress);
 
             // Get any errors that may have ocurred during execution.
             string error = err.ToString();
