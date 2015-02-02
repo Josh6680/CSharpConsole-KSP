@@ -66,6 +66,8 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 			// The Evaluator will use our custom class as the base class (in which scope and context the entered code is executed).
 			Evaluator.fetch.InteractiveBaseClass = typeof(ConsoleExecBaseClass);
 
+			CSharpConsole.Print(ConsoleExecBaseClass.about + "\n");
+
 			return true;
 		} else {
 			Debug.LogWarning("CSharpConsole: Already initialized!");

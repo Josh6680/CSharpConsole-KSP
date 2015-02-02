@@ -40,7 +40,15 @@ public class ConsoleExecBaseClass
 	// This class is used as the base class for anything executed by the console.
 	// Below are some "basic console commands" which can be used simply by entering their name.
 
-	protected static string about
+	public static string about
+	{
+		get
+		{
+			return version + "\n" + license;
+		}
+	}
+
+	protected static string version
 	{
 		get
 		{
@@ -55,15 +63,25 @@ public class ConsoleExecBaseClass
 		}
 	}
 
-	protected static string version { get { return about; } }
+	protected static string license
+	{
+		get
+		{
+			return "<< This plugin/library is licensed under the GNU General Public License Version 2 >>\n" +
+				"<< The Mono.CSharp library is copyright The Mono Project and licensed under the MIT X11 license >>";
+		}
+	}
 
 	protected static string help
 	{
 		get
 		{
-			return about + "\n" +
-				"The following commands are available:\n" +
+			return version + "\n" +
+				"The following are some commands that are available:\n" +
 				"\t<b>help</b> - Displays that which you are currently reading.\n" +
+				"\t<b>about</b> - Displays information about this plugin.\n" +
+				"\t<b>version</b> - Displays version information for this plugin.\n" +
+				"\t<b>license</b> - Displays licensing information for this plugin.\n" +
 				"\t<b>Log(<i>message</i>)</b> - Log a message to this console and the Alt+F2 console (also sends it to the log files).\n" +
 				"\t<b>showhistory</b> - Displays a list of commands entered into this console.\n" +
 				"\t<b>clearhistory</b> - Clears the history of commands entered into this console.\n" +
