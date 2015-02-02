@@ -37,6 +37,7 @@ using UnityEngine;
 using KSP;
 using Mono;
 using Mono.CSharp;
+using CSharpConsoleKSP;
 using Evaluator = CSharpConsoleKSP.Evaluator;
 
 [Serializable]
@@ -248,10 +249,10 @@ public class ConsoleExecBaseClass
     {
         InteractiveBase.LoadPackage(pkg);
     }
-    /*public static TimeSpan Time(InteractiveBase.Simple a)
+    public static TimeSpan Time(Action a)
     {
         return InteractiveBase.Time(a);
-    }*/
+    }
 
     public static InvisibleValue Log(string message)
     {

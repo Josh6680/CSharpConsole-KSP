@@ -7,7 +7,6 @@ using Mono.CSharp;
 
 namespace CSharpConsoleKSP
 {
-
     public static class Evaluator
     {
         private static Mono.CSharp.Evaluator instance = null;
@@ -21,8 +20,6 @@ namespace CSharpConsoleKSP
                 return instance;
             }
         }
-
-
     }
 
     public class EvaluatorPrinter : ReportPrinter
@@ -33,5 +30,4 @@ namespace CSharpConsoleKSP
             base.Print(msg, output, showFullPath);
         }
     }
-
 }
