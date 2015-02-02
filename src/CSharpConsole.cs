@@ -1,447 +1,449 @@
 ﻿/*
-    Interactive C# Console
-    https://github.com/Josh6680/CSharpConsole-KSP
-    Copyright (C) 2014 Josh
+	Interactive C# Console
+	https://github.com/Josh6680/CSharpConsole-KSP
+	Copyright (C) 2014 Josh
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+	You should have received a copy of the GNU General Public License along
+	with this program; if not, write to the Free Software Foundation, Inc.,
+	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    This library is intended to be used as a plugin for Kerbal Space Program
-    which is copyright 2011-2014 Squad. Your usage of Kerbal Space Program
-    itself is governed by the terms of its EULA, not the license above.
-    https://kerbalspaceprogram.com/
+	This library is intended to be used as a plugin for Kerbal Space Program
+	which is copyright 2011-2014 Squad. Your usage of Kerbal Space Program
+	itself is governed by the terms of its EULA, not the license above.
+	https://kerbalspaceprogram.com/
 
-    This library makes use of the Mono.CSharp library
-    which is copyright 2001, 2002, 2003 The Mono Project
-    The Mono.CSharp library itself is licensed under the MIT X11 license.
-    https://github.com/mono/mono/tree/master/mcs/class/Mono.CSharp
+	This library makes use of the Mono.CSharp library
+	which is copyright 2001, 2002, 2003 The Mono Project
+	The Mono.CSharp library itself is licensed under the MIT X11 license.
+	https://github.com/mono/mono/tree/master/mcs/class/Mono.CSharp
 */
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
 using System.Reflection;
-using UnityEngine;
-using KSP;
-using Mono;
 using CSharpConsoleKSP;
+using UnityEngine;
 
 [KSPAddon(KSPAddon.Startup.Instantly, true)]
-class CSharpConsoleLoader : MonoBehaviour
+internal class CSharpConsoleLoader : MonoBehaviour
 {
-    public CSharpConsoleLoader()
-    {
-        // Manually load the Mono.CSharp library.
-        Dependancy.Load("../lib/Mono.CSharp.dll.dat");
+	public CSharpConsoleLoader()
+	{
+		// Manually load the Mono.CSharp library.
+		Dependancy.Load("../lib/Mono.CSharp.dll.dat");
 
-        // Manually load the CSharpConsoleEvaluator library.
-        Dependancy.Load("../lib/CSharpConsoleEvaluator.dll.dat");
+		// Manually load the CSharpConsoleEvaluator library.
+		Dependancy.Load("../lib/CSharpConsoleEvaluator.dll.dat");
 
-        // Instantiate the console.
-        CSharpConsole.Initialize();
+		// Instantiate the console.
+		CSharpConsole.Initialize();
 
-        // All loaded, now show the console.
-        CSharpConsole.ShowConsole();
-    }
+		// All loaded, now show the console.
+		CSharpConsole.ShowConsole();
+	}
 }
 
 public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 {
-    public static bool Initialize()
-    {
-        if (instance == null) {
-            // Instantiate the CSharpConsole object for the first time.
-            instance = new GameObject("CSharpConsole", typeof(CSharpConsole));
-            MonoBehaviour.DontDestroyOnLoad(instance);
+	public static bool Initialize()
+	{
+		if (instance == null) {
+			// Instantiate the CSharpConsole object for the first time.
+			instance = new GameObject("CSharpConsole", typeof(CSharpConsole));
+			MonoBehaviour.DontDestroyOnLoad(instance);
 
-            // The Evaluator will use our custom class as the base class (in which scope and context the entered code is executed).
-            Evaluator.fetch.InteractiveBaseClass = typeof(ConsoleExecBaseClass);
+			// The Evaluator will use our custom class as the base class (in which scope and context the entered code is executed).
+			Evaluator.fetch.InteractiveBaseClass = typeof(ConsoleExecBaseClass);
 
-            return true;
-        } else {
-            Debug.LogWarning("CSharpConsole: Already initialized!");
-            return false;
-        }
-    }
-    public CSharpConsole()
-    {
-        Debug.Log("CSharpConsole: New instance created.");
-    }
+			return true;
+		} else {
+			Debug.LogWarning("CSharpConsole: Already initialized!");
+			return false;
+		}
+	}
 
-    private bool isVisible = false;
-    public Rect windowRect = new Rect(0, 0, 650, 450);
-    private Rect titleBarRect
-    {
-        get
-        {
-            return new Rect(0, 0, windowRect.width - 21, 20);
-        }
-    }
-    private Vector2 scrollPosition = Vector2.zero;
-    private bool autoScroll = true;
+	public CSharpConsole()
+	{
+		Debug.Log("CSharpConsole: New instance created.");
+	}
 
-    private string consoleText = "<color=white>";
-    private string cmd = "";
-    private History history = new History();
-    private string[] completions = null;
-    private string completionPrefix = "";
-    private bool updateCompletions = false;
-    private static bool runImports = true;
-    private GUIStyle autoCompleteSkin = null;
-    private Texture2D skinBackground = null;
+	private bool isVisible = false;
+	public Rect windowRect = new Rect(0, 0, 650, 450);
 
-    public void Update()
-    {
-        // Toggle the console visibility with the "`" (or "~") key.
-        if (Input.GetKeyDown(KeyCode.BackQuote)) {
-            isVisible = !isVisible;
-            Debug.Log("CSharpConsole: isVisible = " + isVisible.ToString());
-        }
+	private Rect titleBarRect
+	{
+		get
+		{
+			return new Rect(0, 0, windowRect.width - 21, 20);
+		}
+	}
 
-        if (updateCompletions && !cmd.StartsWith("using ")) {
-            completions = Evaluator.fetch.GetCompletions(cmd, out completionPrefix);
-            updateCompletions = false;
-        }
+	private Vector2 scrollPosition = Vector2.zero;
+	private bool autoScroll = true;
 
-        // TODO: If only there was some way to register these key events here while the TextField is focused...
-        /*if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.PageUp)) {
-            // Get previous input history item and set it as current.
-            history.IndexPrev(ref cmd);
-        } else if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.PageDown)) {
-            // Get next input history item and set it as current.
-            history.IndexNext(ref cmd);
-        }*/
-    }
+	private string consoleText = "<color=white>";
+	private string cmd = "";
+	private History history = new History();
+	private string[] completions = null;
+	private string completionPrefix = "";
+	private bool updateCompletions = false;
+	private static bool runImports = true;
+	private GUIStyle autoCompleteSkin = null;
+	private Texture2D skinBackground = null;
 
-    public void OnGUI()
-    {
-        // Create the auto complete skin the first time.
-        // This has to be done in OnGUI() due to restrictions in place by Unity Engine.
-        if (autoCompleteSkin == null) {
-            skinBackground = new Texture2D(1, 1, TextureFormat.Alpha8, false);
+	public void Update()
+	{
+		// Toggle the console visibility with the "`" (or "~") key.
+		if (Input.GetKeyDown(KeyCode.BackQuote)) {
+			isVisible = !isVisible;
+			Debug.Log("CSharpConsole: isVisible = " + isVisible.ToString());
+		}
 
-            autoCompleteSkin = new GUIStyle(GUI.skin.label);
-            autoCompleteSkin.alignment = TextAnchor.MiddleLeft;
-            autoCompleteSkin.richText = false;
-            autoCompleteSkin.wordWrap = false;
-            autoCompleteSkin.stretchWidth = true;
-            autoCompleteSkin.stretchHeight = false;
+		if (updateCompletions && !cmd.StartsWith("using ")) {
+			completions = Evaluator.fetch.GetCompletions(cmd, out completionPrefix);
+			updateCompletions = false;
+		}
 
-            autoCompleteSkin.normal = new GUIStyleState()
-            {
-                background = skinBackground,
-                textColor = Color.white
-            };
+		// TODO: If only there was some way to register these key events here while the TextField is focused...
+		/*if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.PageUp)) {
+			// Get previous input history item and set it as current.
+			history.IndexPrev(ref cmd);
+		} else if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.PageDown)) {
+			// Get next input history item and set it as current.
+			history.IndexNext(ref cmd);
+		}*/
+	}
 
-            autoCompleteSkin.active = new GUIStyleState()
-            {
-                background = skinBackground,
-                textColor = new Color(0, 0.5f, 0, 1)
-            };
+	public void OnGUI()
+	{
+		// Create the auto complete skin the first time.
+		// This has to be done in OnGUI() due to restrictions in place by Unity Engine.
+		if (autoCompleteSkin == null) {
+			skinBackground = new Texture2D(1, 1, TextureFormat.Alpha8, false);
 
-            autoCompleteSkin.focused = new GUIStyleState()
-            {
-                background = skinBackground,
-                textColor = Color.green
-            };
+			autoCompleteSkin = new GUIStyle(GUI.skin.label);
+			autoCompleteSkin.alignment = TextAnchor.MiddleLeft;
+			autoCompleteSkin.richText = false;
+			autoCompleteSkin.wordWrap = false;
+			autoCompleteSkin.stretchWidth = true;
+			autoCompleteSkin.stretchHeight = false;
 
-            autoCompleteSkin.hover = new GUIStyleState()
-            {
-                background = skinBackground,
-                textColor = Color.green
-            };
+			autoCompleteSkin.normal = new GUIStyleState()
+			{
+				background = skinBackground,
+				textColor = Color.white
+			};
 
-            autoCompleteSkin.border = new RectOffset(0, 0, 0, 0);
-            autoCompleteSkin.padding = new RectOffset(3, 0, 0, 0);
-        }
+			autoCompleteSkin.active = new GUIStyleState()
+			{
+				background = skinBackground,
+				textColor = new Color(0, 0.5f, 0, 1)
+			};
 
-        if (isVisible) {
-            windowRect = GUI.Window(GUIUtility.GetControlID(FocusType.Passive, windowRect), windowRect, ConsoleWindow, "Interactive C# Console");
-            if (completions != null && completions.Length > 0) {
-                GUI.Window(GUIUtility.GetControlID(FocusType.Passive), new Rect(windowRect.x + windowRect.width / 2, windowRect.y + windowRect.height, 200, 200), AutoCompleteWindow, "", GUI.skin.box);
-            }
-        }
-    }
-    private void ConsoleWindow(int windowID)
-    {
-        // Make sure the default text coloring is white.
-        GUI.contentColor = Color.white;
+			autoCompleteSkin.focused = new GUIStyleState()
+			{
+				background = skinBackground,
+				textColor = Color.green
+			};
 
-        // The "x" (close) button in the top-right corner.
-        if (GUI.Button(new Rect(windowRect.width - 28, 2, 21, 18), "x")) {
-            HideConsole();
-        }
+			autoCompleteSkin.hover = new GUIStyleState()
+			{
+				background = skinBackground,
+				textColor = Color.green
+			};
 
-        // Begin vertical block with textArea skin.
-        GUILayout.BeginVertical(GUI.skin.textArea, GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
-        {
-            // Begin scroll view block.
-            scrollPosition = GUILayout.BeginScrollView(scrollPosition);
-            {
-                // Display the console text.
-                GUILayout.TextArea(consoleText + "</color>", int.MaxValue, new GUIStyle()
-                {
-                    richText = true,
-                    wordWrap = false,
-                    clipping = TextClipping.Overflow,
-                    stretchHeight = true,
-                    stretchWidth = true
-                });
-            }
-            GUILayout.EndScrollView();
-        }
-        GUILayout.EndVertical();
+			autoCompleteSkin.border = new RectOffset(0, 0, 0, 0);
+			autoCompleteSkin.padding = new RectOffset(3, 0, 0, 0);
+		}
 
-        // Begin horizontal layout block.
-        GUILayout.BeginHorizontal();
-        {
-            // Clear button, resets the console text.
-            if (GUILayout.Button("Clear", GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(false))) {
-                Clear();
-            }
+		if (isVisible) {
+			windowRect = GUI.Window(GUIUtility.GetControlID(FocusType.Passive, windowRect), windowRect, ConsoleWindow, "Interactive C# Console");
+			if (completions != null && completions.Length > 0) {
+				GUI.Window(GUIUtility.GetControlID(FocusType.Passive), new Rect(windowRect.x + windowRect.width / 2, windowRect.y + windowRect.height, 200, 200), AutoCompleteWindow, "", GUI.skin.box);
+			}
+		}
+	}
 
-            // Toggle button for automatic scrolling.
-            autoScroll = GUILayout.Toggle(autoScroll, "Autoscroll", GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(false));
+	private void ConsoleWindow(int windowID)
+	{
+		// Make sure the default text coloring is white.
+		GUI.contentColor = Color.white;
 
-            // TODO: Have to check for key events here instead of Update() so that the TextField doesn't steal the event!
-            if (Event.current.isKey && Event.current.type == EventType.keyDown && (Event.current.keyCode == KeyCode.UpArrow || Event.current.keyCode == KeyCode.PageUp)) {
-                // Get previous input history item and set it as current.
-                history.IndexPrev(ref cmd);
-            } else if (Event.current.isKey && Event.current.type == EventType.keyDown && (Event.current.keyCode == KeyCode.DownArrow || Event.current.keyCode == KeyCode.PageDown)) {
-                // Get next input history item and set it as current.
-                history.IndexNext(ref cmd);
-            }
+		// The "x" (close) button in the top-right corner.
+		if (GUI.Button(new Rect(windowRect.width - 28, 2, 21, 18), "x")) {
+			HideConsole();
+		}
 
-            // C# input box!
-            // TODO: Remove the hardcoded "magic" number 200 in the width!
-            string input = GUILayout.TextField(cmd, int.MaxValue, GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(false), GUILayout.Width(windowRect.width - 200));
+		// Begin vertical block with textArea skin.
+		GUILayout.BeginVertical(GUI.skin.textArea, GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
+		{
+			// Begin scroll view block.
+			scrollPosition = GUILayout.BeginScrollView(scrollPosition);
+			{
+				// Display the console text.
+				GUILayout.TextArea(consoleText + "</color>", int.MaxValue, new GUIStyle()
+				{
+					richText = true,
+					wordWrap = false,
+					clipping = TextClipping.Overflow,
+					stretchHeight = true,
+					stretchWidth = true
+				});
+			}
+			GUILayout.EndScrollView();
+		}
+		GUILayout.EndVertical();
 
-            if (input != cmd) {
-                cmd = input;
-                updateCompletions = true;
-            }
+		// Begin horizontal layout block.
+		GUILayout.BeginHorizontal();
+		{
+			// Clear button, resets the console text.
+			if (GUILayout.Button("Clear", GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(false))) {
+				Clear();
+			}
 
-            // Submit button.
-            if (GUILayout.Button("Submit", GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(false)) || (Event.current.isKey && (Event.current.keyCode == KeyCode.KeypadEnter || Event.current.keyCode == KeyCode.Return))) {
-                // Print the code about to be executed to the console.
-                Print("] " + cmd + "\n");
+			// Toggle button for automatic scrolling.
+			autoScroll = GUILayout.Toggle(autoScroll, "Autoscroll", GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(false));
 
-                // Add this to the console input history.
-                fetch.history.Add(cmd);
+			// TODO: Have to check for key events here instead of Update() so that the TextField doesn't steal the event!
+			if (Event.current.isKey && Event.current.type == EventType.keyDown && (Event.current.keyCode == KeyCode.UpArrow || Event.current.keyCode == KeyCode.PageUp)) {
+				// Get previous input history item and set it as current.
+				history.IndexPrev(ref cmd);
+			} else if (Event.current.isKey && Event.current.type == EventType.keyDown && (Event.current.keyCode == KeyCode.DownArrow || Event.current.keyCode == KeyCode.PageDown)) {
+				// Get next input history item and set it as current.
+				history.IndexNext(ref cmd);
+			}
 
-                // Now, execute the code.
-                Execute(cmd);
+			// C# input box!
+			// TODO: Remove the hardcoded "magic" number 200 in the width!
+			string input = GUILayout.TextField(cmd, int.MaxValue, GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(false), GUILayout.Width(windowRect.width - 200));
 
-                // Clear the input box.
-                cmd = "";
-            }
-        }
-        GUILayout.EndHorizontal();
+			if (input != cmd) {
+				cmd = input;
+				updateCompletions = true;
+			}
 
-        // Make this window draggable by it's titlebar.
-        GUI.DragWindow(titleBarRect);
-    }
-    private void AutoCompleteWindow(int windowID)
-    {
-        int y = 0;
-        foreach (string str in completions) {
-            if (completionPrefix != null) {
-                if (GUI.Button(new Rect(0, y, 200, 20), completionPrefix + str, autoCompleteSkin)) {
-                    cmd += str;
-                    completions = null;
-                    completionPrefix = "";
-                }
-            } else {
-                if (GUI.Button(new Rect(0, y, 200, 20), str, autoCompleteSkin)) {
-                    cmd += str;
-                    completions = null;
-                    completionPrefix = "";
-                }
-            }
-            y += 18;
-        }
-    }
+			// Submit button.
+			if (GUILayout.Button("Submit", GUILayout.ExpandHeight(false), GUILayout.ExpandWidth(false)) || (Event.current.isKey && (Event.current.keyCode == KeyCode.KeypadEnter || Event.current.keyCode == KeyCode.Return))) {
+				// Print the code about to be executed to the console.
+				Print("] " + cmd + "\n");
 
-    // Executes the specified C# code.
-    public static void Execute(string code)
-    {
-        if (runImports) {
-            runImports = false;
+				// Add this to the console input history.
+				fetch.history.Add(cmd);
 
-            try {
-                // An attempt at pre-referencing some assemblies.
-                // Additional assembies can be referenced in-game by executing:
-                // LoadAssembly("Assembly_Name"); or using Namespace_Name;
-                Evaluator.fetch.ReferenceAssembly(Assembly.GetExecutingAssembly());
-                Evaluator.fetch.ReferenceAssembly(typeof(System.Object).Assembly);
-                Evaluator.fetch.ReferenceAssembly(typeof(MonoBehaviour).Assembly);
-                Evaluator.fetch.ReferenceAssembly(typeof(PSystemBody).Assembly);
-                Evaluator.fetch.ReferenceAssembly(typeof(Mono.CSharp.Evaluator).Assembly);
-                Evaluator.fetch.ReferenceAssembly(typeof(Evaluator).Assembly);
+				// Now, execute the code.
+				Execute(cmd);
 
-                string usings = @"// This is totally just a blank line for formatting reasons.
-                    using System;
-                    using System.Collections.Generic;
-                    using System.Text;
-                    using System.Xml;
-                    using System.Reflection;
-                    using System.Linq;
-                    using Mono;
-                    //using Mono.CSharp;
-                    using UnityEngine;
-                    using KSP;
-                    using CSharpConsoleKSP;
-                    using Evaluator = CSharpConsoleKSP.Evaluator;";
+				// Clear the input box.
+				cmd = "";
+			}
+		}
+		GUILayout.EndHorizontal();
 
-                // Attempt to run the using statements.
-                Evaluator.fetch.Run(usings);
-            } catch (Exception ex) {
-                // Log the error if it failed for whatever reason.
-                Print("<color=red><b><i>Run imports failed</i>:</b> " + ex.ToString() + "</color>\n");
-                Debug.LogException(ex);
-            }
-        }
+		// Make this window draggable by it's titlebar.
+		GUI.DragWindow(titleBarRect);
+	}
 
-        // Any caught errors will be logged to the console.
-        try {
-            object res; // The returned value.
-            bool ress; // Is the return value set?
+	private void AutoCompleteWindow(int windowID)
+	{
+		int y = 0;
+		foreach (string str in completions) {
+			if (completionPrefix != null) {
+				if (GUI.Button(new Rect(0, y, 200, 20), completionPrefix + str, autoCompleteSkin)) {
+					cmd += str;
+					completions = null;
+					completionPrefix = "";
+				}
+			} else {
+				if (GUI.Button(new Rect(0, y, 200, 20), str, autoCompleteSkin)) {
+					cmd += str;
+					completions = null;
+					completionPrefix = "";
+				}
+			}
+			y += 18;
+		}
+	}
 
-            // Redirect the Evaluator message output.
-            StringWriter err = new StringWriter();
-            //Evaluator.fetch.MessageOutput = err;
-            EvaluatorPrinter.output = err;
+	// Executes the specified C# code.
+	public static void Execute(string code)
+	{
+		if (runImports) {
+			runImports = false;
 
-            // Evaluate the code, adding an extra semicolon just in case, and get the results.
-            string s = Evaluator.fetch.Evaluate(code + ";", out res, out ress);
+			try {
+				// An attempt at pre-referencing some assemblies.
+				// Additional assembies can be referenced in-game by executing:
+				// LoadAssembly("Assembly_Name"); or using Namespace_Name;
+				Evaluator.fetch.ReferenceAssembly(Assembly.GetExecutingAssembly());
+				Evaluator.fetch.ReferenceAssembly(typeof(System.Object).Assembly);
+				Evaluator.fetch.ReferenceAssembly(typeof(MonoBehaviour).Assembly);
+				Evaluator.fetch.ReferenceAssembly(typeof(PSystemBody).Assembly);
+				Evaluator.fetch.ReferenceAssembly(typeof(Mono.CSharp.Evaluator).Assembly);
+				Evaluator.fetch.ReferenceAssembly(typeof(Evaluator).Assembly);
 
-            // Get any errors that may have ocurred during execution.
-            string error = err.ToString();
+				string usings = @"// This is totally just a blank line for formatting reasons.
+					using System;
+					using System.Collections.Generic;
+					using System.Text;
+					using System.Xml;
+					using System.Reflection;
+					using System.Linq;
+					using Mono;
+					//using Mono.CSharp;
+					using UnityEngine;
+					using KSP;
+					using CSharpConsoleKSP;
+					using Evaluator = CSharpConsoleKSP.Evaluator;";
 
-            // Check if we got an error returned.
-            if (error.Length > 0) {
-                // Log the error message.
-                Print("<color=red>" + error + "</color>\n");
-                Debug.LogError(error);
-            } else {
-                if (ress) {
-                    if (res.GetType().Equals(typeof(InvisibleValue))) {
-                        // HACK: Workaround to explicitly disable showing the returned value.
-                    } else if (res != null) {
-                        // Print the returned object as a string.
-                        Print(res.ToString() + "\n");
-                        Debug.Log(res.ToString());
-                    } else {
-                        // A null value was returned.
-                        Print("<color=red><b><i>null</i></b></color>\n");
-                    }
-                } else {
-                    // The return value was not set (most likely because it was a function with void return).
-                    Print("<color=#EEEEEE><b><i>no result</i></b></color>\n");
-                }
-            }
-        } catch (Exception ex) {
-            // Log any uncaught error messages.
-            Print(ex.ToString() + "\n", LogType.Exception);
-            Debug.LogException(ex);
-        }
-    }
+				// Attempt to run the using statements.
+				Evaluator.fetch.Run(usings);
+			} catch (Exception ex) {
+				// Log the error if it failed for whatever reason.
+				Print("<color=red><b><i>Run imports failed</i>:</b> " + ex.ToString() + "</color>\n");
+				Debug.LogException(ex);
+			}
+		}
 
-    // Shows the console and creates it if necessary.
-    public static void ShowConsole()
-    {
-        if (instance == null) {
-            // For lazy peeps that didn't bother to Initialize() it.
-            Initialize();
-        }
-        fetch.isVisible = true;
-        //Debug.Log("CSharpConsole: isVisible = " + fetch.isVisible.ToString());
-    }
+		// Any caught errors will be logged to the console.
+		try {
+			object res; // The returned value.
+			bool ress; // Is the return value set?
 
-    // Hides the console, of course.
-    public static void HideConsole()
-    {
-        fetch.isVisible = false;
-        //Debug.Log("CSharpConsole: isVisible = " + fetch.isVisible.ToString());
-    }
+			// Redirect the Evaluator message output.
+			StringWriter err = new StringWriter();
+			//Evaluator.fetch.MessageOutput = err;
+			EvaluatorPrinter.output = err;
 
-    // Returns wether the console is visible.
-    public static bool IsVisible()
-    {
-        return fetch.isVisible;
-    }
+			// Evaluate the code, adding an extra semicolon just in case, and get the results.
+			string s = Evaluator.fetch.Evaluate(code + ";", out res, out ress);
 
-    // Gets a list of console command history.
-    public static List<string> GetHistory()
-    {
-        return fetch.history.Get();
-    }
+			// Get any errors that may have ocurred during execution.
+			string error = err.ToString();
 
-    // Clears the console command history, of course.
-    public static void ClearHistory()
-    {
-        fetch.history.Clear();
-    }
+			// Check if we got an error returned.
+			if (error.Length > 0) {
+				// Log the error message.
+				Print("<color=red>" + error + "</color>\n");
+				Debug.LogError(error);
+			} else {
+				if (ress) {
+					if (res.GetType().Equals(typeof(InvisibleValue))) {
+						// HACK: Workaround to explicitly disable showing the returned value.
+					} else if (res != null) {
+						// Print the returned object as a string.
+						Print(res.ToString() + "\n");
+						Debug.Log(res.ToString());
+					} else {
+						// A null value was returned.
+						Print("<color=red><b><i>null</i></b></color>\n");
+					}
+				} else {
+					// The return value was not set (most likely because it was a function with void return).
+					Print("<color=#EEEEEE><b><i>no result</i></b></color>\n");
+				}
+			}
+		} catch (Exception ex) {
+			// Log any uncaught error messages.
+			Print(ex.ToString() + "\n", LogType.Exception);
+			Debug.LogException(ex);
+		}
+	}
 
-    // Clears all text in the console and sets it to the default.
-    public static void Clear()
-    {
-        fetch.consoleText = "<color=white>";
-    }
+	// Shows the console and creates it if necessary.
+	public static void ShowConsole()
+	{
+		if (instance == null) {
+			// For lazy peeps that didn't bother to Initialize() it.
+			Initialize();
+		}
+		fetch.isVisible = true;
+		//Debug.Log("CSharpConsole: isVisible = " + fetch.isVisible.ToString());
+	}
 
-    // Resets the console to it's default state, more or less.
-    public static void Reset()
-    {
-        Clear();
-        ClearHistory();
-    }
+	// Hides the console, of course.
+	public static void HideConsole()
+	{
+		fetch.isVisible = false;
+		//Debug.Log("CSharpConsole: isVisible = " + fetch.isVisible.ToString());
+	}
 
-    // Prints the specified text to the console.
-    public static void Print(string message)
-    {
-        fetch.consoleText += message;
+	// Returns wether the console is visible.
+	public static bool IsVisible()
+	{
+		return fetch.isVisible;
+	}
 
-        if (fetch.autoScroll) {
-            // If autoScroll enabled, set scrollPosition to the bottom.
-            fetch.scrollPosition = new Vector2(fetch.scrollPosition.x, float.MaxValue);
-        }
-    }
+	// Gets a list of console command history.
+	public static List<string> GetHistory()
+	{
+		return fetch.history.Get();
+	}
 
-    /// <summary>
-    /// Prints the passed message to the console with the color mapped to the LogType.
-    /// </summary>
-    /// <param name="message">The message to print to the console.</param>
-    /// <param name="type">The LogType mapped to the color defined in Con.logTypeColors</param>
-    public static void Print(string message, LogType type)
-    {
-        Print("<color=" + Con.logTypeColors[type] + ">" + message + "</color>");
-    }
+	// Clears the console command history, of course.
+	public static void ClearHistory()
+	{
+		fetch.history.Clear();
+	}
 
-    /// <summary>
-    /// Log callback method that prints the log message to the console.
-    /// </summary>
-    /// <param name="message">The log message to be shown.</param>
-    /// <param name="stackTrace">Trace of where the log message came from.</param>
-    /// <param name="type">Type of log message (error, exception, warning, assert).</param>
-    public static void HandleLog(string message, string stackTrace, LogType type)
-    {
-        string output = "[" + type.ToString() + "]: " + message;
-        if (stackTrace != null && stackTrace != "") {
-            output += "\n" + stackTrace;
-        }
-        output += "\n";
-        Print(output, type);
-    }
+	// Clears all text in the console and sets it to the default.
+	public static void Clear()
+	{
+		fetch.consoleText = "<color=white>";
+	}
+
+	// Resets the console to it's default state, more or less.
+	public static void Reset()
+	{
+		Clear();
+		ClearHistory();
+	}
+
+	// Prints the specified text to the console.
+	public static void Print(string message)
+	{
+		fetch.consoleText += message;
+
+		if (fetch.autoScroll) {
+			// If autoScroll enabled, set scrollPosition to the bottom.
+			fetch.scrollPosition = new Vector2(fetch.scrollPosition.x, float.MaxValue);
+		}
+	}
+
+	/// <summary>
+	/// Prints the passed message to the console with the color mapped to the LogType.
+	/// </summary>
+	/// <param name="message">The message to print to the console.</param>
+	/// <param name="type">The LogType mapped to the color defined in Con.logTypeColors</param>
+	public static void Print(string message, LogType type)
+	{
+		Print("<color=" + Con.logTypeColors[type] + ">" + message + "</color>");
+	}
+
+	/// <summary>
+	/// Log callback method that prints the log message to the console.
+	/// </summary>
+	/// <param name="message">The log message to be shown.</param>
+	/// <param name="stackTrace">Trace of where the log message came from.</param>
+	/// <param name="type">Type of log message (error, exception, warning, assert).</param>
+	public static void HandleLog(string message, string stackTrace, LogType type)
+	{
+		string output = "[" + type.ToString() + "]: " + message;
+		if (stackTrace != null && stackTrace != "") {
+			output += "\n" + stackTrace;
+		}
+		output += "\n";
+		Print(output, type);
+	}
 }
