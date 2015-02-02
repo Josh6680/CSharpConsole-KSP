@@ -30,23 +30,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
 using UnityEngine;
-
-public static class Dependancy
-{
-	public static Assembly Load(string filename)
-	{
-		string path = new FileInfo(Assembly.GetExecutingAssembly().Location).DirectoryName + "\\" + filename;
-		if (File.Exists(path)) {
-			return Assembly.LoadFile(path);
-		} else {
-			Debug.LogError("CSharpConsole: Failed to load dependancy: '" + path + "'");
-			return null;
-		}
-	}
-}
 
 // HACK: Workaround class to tell the console not to show the returned value.
 public class InvisibleValue { /* Nothing to see here... */ }

@@ -32,7 +32,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Mono.CSharp;
+using CSharpConsoleKSP;
 using UnityEngine;
 
 [KSPAddon(KSPAddon.Startup.Instantly, true)]
@@ -42,6 +42,9 @@ internal class CSharpConsoleLoader : MonoBehaviour
 	{
 		// Manually load the Mono.CSharp library.
 		Dependancy.Load("../lib/Mono.CSharp.dll.dat");
+
+		// Manually load the CSharpConsoleEvaluator library.
+		Dependancy.Load("../lib/CSharpConsoleEvaluator.dll.dat");
 
 		// Instantiate the console.
 		CSharpConsole.Initialize();
@@ -56,8 +59,13 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 	public static bool Initialize()
 	{
 		if (instance == null) {
+			// Instantiate the CSharpConsole object for the first time.
 			instance = new GameObject("CSharpConsole", typeof(CSharpConsole));
 			MonoBehaviour.DontDestroyOnLoad(instance);
+
+			// The Evaluator will use our custom class as the base class (in which scope and context the entered code is executed).
+			Evaluator.fetch.InteractiveBaseClass = typeof(ConsoleExecBaseClass);
+
 			return true;
 		} else {
 			Debug.LogWarning("CSharpConsole: Already initialized!");
@@ -90,6 +98,7 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 	private string[] completions = null;
 	private string completionPrefix = "";
 	private bool updateCompletions = false;
+	private static bool runImports = true;
 	private GUIStyle autoCompleteSkin = null;
 	private Texture2D skinBackground = null;
 
@@ -102,7 +111,7 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 		}
 
 		if (updateCompletions && !cmd.StartsWith("using ")) {
-			completions = Evaluator.GetCompletions(cmd, out completionPrefix);
+			completions = Evaluator.fetch.GetCompletions(cmd, out completionPrefix);
 			updateCompletions = false;
 		}
 
@@ -270,51 +279,55 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 	// Executes the specified C# code.
 	public static void Execute(string code)
 	{
-		// Really don't want this section to crash out.
-		// Any caught errors will be logged to the console.
-		try {
-			// The Evaluator will use our custom class as the base class (in which scope and context the entered code is executed).
-			// TODO: This could probably be moved to plugin load where it will only be set once (might save some overhead?).
-			Evaluator.InteractiveBaseClass = typeof(ConsoleExecBaseClass);
-
-			// An attempt at pre-referencing some assemblies.
-			// Additional assembies can be referenced in-game by executing:
-			// LoadAssembly("Assembly_Name");
-			// using Namespace_Name;
-			Evaluator.ReferenceAssembly(Assembly.GetExecutingAssembly());
-			Evaluator.ReferenceAssembly(typeof(System.Object).Assembly);
-			Evaluator.ReferenceAssembly(typeof(MonoBehaviour).Assembly);
-			Evaluator.ReferenceAssembly(typeof(PSystemBody).Assembly);
-
-			// TODO: Some of these actually don't seem to work "out of the box", KSP being one of them.
-			string usings = @"
-				using System;
-				using System.Collections.Generic;
-				using System.Text;
-				using System.Xml;
-				using KSP;
-				using UnityEngine;
-				using System.Reflection;
-				using System.Linq;";
+		if (runImports) {
+			runImports = false;
 
 			try {
+				// An attempt at pre-referencing some assemblies.
+				// Additional assembies can be referenced in-game by executing:
+				// LoadAssembly("Assembly_Name"); or using Namespace_Name;
+				Evaluator.fetch.ReferenceAssembly(Assembly.GetExecutingAssembly());
+				Evaluator.fetch.ReferenceAssembly(typeof(System.Object).Assembly);
+				Evaluator.fetch.ReferenceAssembly(typeof(MonoBehaviour).Assembly);
+				Evaluator.fetch.ReferenceAssembly(typeof(PSystemBody).Assembly);
+				Evaluator.fetch.ReferenceAssembly(typeof(Mono.CSharp.Evaluator).Assembly);
+				Evaluator.fetch.ReferenceAssembly(typeof(Evaluator).Assembly);
+
+				string usings = @"// This is totally just a blank line for formatting reasons.
+					using System;
+					using System.Collections.Generic;
+					using System.Text;
+					using System.Xml;
+					using System.Reflection;
+					using System.Linq;
+					using Mono;
+					//using Mono.CSharp;
+					using UnityEngine;
+					using KSP;
+					using CSharpConsoleKSP;
+					using Evaluator = CSharpConsoleKSP.Evaluator;";
+
 				// Attempt to run the using statements.
-				Evaluator.Run(usings);
+				Evaluator.fetch.Run(usings);
 			} catch (Exception ex) {
 				// Log the error if it failed for whatever reason.
-				Print("<color=red>Run imports failed: " + ex.ToString() + "</color>\n");
+				Print("<color=red><b><i>Run imports failed</i>:</b> " + ex.ToString() + "</color>\n");
 				Debug.LogException(ex);
 			}
+		}
 
+		// Any caught errors will be logged to the console.
+		try {
 			object res; // The returned value.
 			bool ress; // Is the return value set?
 
 			// Redirect the Evaluator message output.
 			StringWriter err = new StringWriter();
-			Evaluator.MessageOutput = err;
+			//Evaluator.fetch.MessageOutput = err;
+			EvaluatorPrinter.output = err;
 
 			// Evaluate the code, adding an extra semicolon just in case, and get the results.
-			string s = Evaluator.Evaluate(code + ";", out res, out ress);
+			string s = Evaluator.fetch.Evaluate(code + ";", out res, out ress);
 
 			// Get any errors that may have ocurred during execution.
 			string error = err.ToString();

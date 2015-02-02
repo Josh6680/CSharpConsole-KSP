@@ -32,6 +32,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using Mono.CSharp;
+using Evaluator = CSharpConsoleKSP.Evaluator;
 
 [Serializable]
 public class ConsoleExecBaseClass
@@ -168,7 +169,7 @@ public class ConsoleExecBaseClass
 	{
 		get
 		{
-			return Evaluator.GetUsing();
+			return Evaluator.fetch.GetUsing();
 		}
 	}
 
@@ -181,7 +182,7 @@ public class ConsoleExecBaseClass
 	{
 		get
 		{
-			return Evaluator.GetVars();
+			return Evaluator.fetch.GetVars();
 		}
 	}
 
@@ -192,37 +193,37 @@ public class ConsoleExecBaseClass
 
 	public static CompiledMethod Compile(string input)
 	{
-		return Evaluator.Compile(input);
+		return Evaluator.fetch.Compile(input);
 	}
 
 	public static string Compile(string input, out CompiledMethod compiled)
 	{
-		return Evaluator.Compile(input, out compiled);
+		return Evaluator.fetch.Compile(input, out compiled);
 	}
 
 	public static object Evaluate(string input)
 	{
-		return Evaluator.Evaluate(input);
+		return Evaluator.fetch.Evaluate(input);
 	}
 
 	public static string Evaluate(string input, out object result, out bool result_set)
 	{
-		return Evaluator.Evaluate(input, out result, out result_set);
+		return Evaluator.fetch.Evaluate(input, out result, out result_set);
 	}
 
 	public static bool Run(string statement)
 	{
-		return Evaluator.Run(statement);
+		return Evaluator.fetch.Run(statement);
 	}
 
 	public static void Interrupt()
 	{
-		Evaluator.Interrupt();
+		Evaluator.fetch.Interrupt();
 	}
 
 	public static void ReferenceAssembly(Assembly a)
 	{
-		Evaluator.ReferenceAssembly(a);
+		Evaluator.fetch.ReferenceAssembly(a);
 	}
 
 	public static string ContinuationPrompt
@@ -267,7 +268,7 @@ public class ConsoleExecBaseClass
 		InteractiveBase.LoadPackage(pkg);
 	}
 
-	public static TimeSpan Time(InteractiveBase.Simple a)
+	public static TimeSpan Time(Action a)
 	{
 		return InteractiveBase.Time(a);
 	}
