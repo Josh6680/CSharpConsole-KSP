@@ -73,10 +73,13 @@ public static class Con
 
 	public static void Log(string message)
 	{
-		if (message != null) {
+		if (message != null)
+		{
 			CSharpConsole.Print(message + "\n");
 			Debug.Log(message);
-		} else {
+		}
+		else
+		{
 #if DEBUG
 			CSharpConsole.Print("[Debug] A null message log was attempted!\n", LogType.Warning);
 			Debug.LogWarning("CSharpConsole: A null message log was attempted!");
@@ -86,10 +89,13 @@ public static class Con
 
 	public static void Log(string message, LogType type)
 	{
-		if (message != null) {
+		if (message != null)
+		{
 			CSharpConsole.Print(message + "\n");
 			Debug.Log(message);
-		} else {
+		}
+		else
+		{
 #if DEBUG
 			CSharpConsole.Print("[Debug] A null message log was attempted!\n", LogType.Warning);
 			Debug.LogWarning("CSharpConsole: A null message log was attempted!");

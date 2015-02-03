@@ -98,9 +98,12 @@ public class ConsoleExecBaseClass
 	{
 		get
 		{
-			if (HighLogic.SaveFolder != null && HighLogic.SaveFolder != "" && HighLogic.SaveFolder != "default") {
+			if (HighLogic.SaveFolder != null && HighLogic.SaveFolder != "" && HighLogic.SaveFolder != "default")
+			{
 				return "Hello, " + HighLogic.SaveFolder + ".";
-			} else {
+			}
+			else
+			{
 				return "Hello, Dave.";
 			}
 		}
@@ -110,10 +113,13 @@ public class ConsoleExecBaseClass
 	{
 		get
 		{
-			if (CSharpConsole.IsVisible()) {
+			if (CSharpConsole.IsVisible())
+			{
 				CSharpConsole.HideConsole();
 				return "Console hidden.";
-			} else {
+			}
+			else
+			{
 				return "Console is already hidden!";
 			}
 		}
@@ -123,9 +129,12 @@ public class ConsoleExecBaseClass
 	{
 		get
 		{
-			if (CSharpConsole.IsVisible()) {
+			if (CSharpConsole.IsVisible())
+			{
 				return "Console is already visible!";
-			} else {
+			}
+			else
+			{
 				CSharpConsole.ShowConsole();
 				return "Console shown.";
 			}
@@ -136,10 +145,13 @@ public class ConsoleExecBaseClass
 	{
 		get
 		{
-			if (CSharpConsole.IsVisible()) {
+			if (CSharpConsole.IsVisible())
+			{
 				CSharpConsole.HideConsole();
 				return "Console hidden.";
-			} else {
+			}
+			else
+			{
 				CSharpConsole.ShowConsole();
 				return "Console shown.";
 			}
@@ -308,18 +320,15 @@ public class ConsoleExecBaseClass
 		}
 		set
 		{
-			if (value) {
-				if (_con_hooklog) {
-					Con.Log("The log is already hooked!");
-				} else {
-					KSPLog.AddLogCallback(CSharpConsole.HandleLog);
-				}
-			} else {
-				if (_con_hooklog) {
-					KSPLog.RemoveLogCallback(CSharpConsole.HandleLog);
-				} else {
-					Con.Log("The log is already <b>un</b>hooked!");
-				}
+			if (value)
+			{
+				if (_con_hooklog) 	Con.Log("The log is already hooked!");
+				else 			KSPLog.AddLogCallback(CSharpConsole.HandleLog);
+			}
+			else
+			{
+				if (_con_hooklog) 	KSPLog.RemoveLogCallback(CSharpConsole.HandleLog);
+				else 			Con.Log("The log is already <b>un</b>hooked!");
 			}
 			_con_hooklog = value;
 		}

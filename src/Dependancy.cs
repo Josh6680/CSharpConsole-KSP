@@ -7,9 +7,12 @@ public static class Dependancy
 	public static Assembly Load(string filename)
 	{
 		string path = new FileInfo(Assembly.GetExecutingAssembly().Location).DirectoryName + "\\" + filename;
-		if (File.Exists(path)) {
+		if (File.Exists(path))
+		{
 			return Assembly.LoadFile(path);
-		} else {
+		}
+		else
+		{
 			Debug.LogError("CSharpConsoleLoader: Failed to load dependancy: '" + path + "'");
 			return null;
 		}
