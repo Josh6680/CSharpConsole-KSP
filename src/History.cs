@@ -78,32 +78,46 @@ public class History
 
 	public bool IndexPrev(ref string str)
 	{
-		if (lastindex == -1) {
+		if (lastindex == -1)
+		{
 			return false;
-		} else if (lastindex == 0) {
+		}
+		else if (lastindex == 0)
+		{
 			str = Get(lastindex);
 			return true;
-		} else if (lastindex > 0) {
+		}
+		else if (lastindex > 0)
+		{
 			str = Get(lastindex);
 			lastindex--;
 			return true;
-		} else {
+		}
+		else
+		{
 			return false;
 		}
 	}
 
 	public bool IndexNext(ref string str)
 	{
-		if (lastindex == -1) {
+		if (lastindex == -1)
+		{
 			return false;
-		} else if (lastindex == history.Count - 1) {
+		}
+		else if (lastindex == history.Count - 1)
+		{
 			str = Get(lastindex);
 			return true;
-		} else if (lastindex < history.Count - 1) {
+		}
+		else if (lastindex < history.Count - 1)
+		{
 			str = Get(lastindex);
 			lastindex++;
 			return true;
-		} else {
+		}
+		else
+		{
 			return false;
 		}
 	}
