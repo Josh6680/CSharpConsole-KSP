@@ -10,7 +10,8 @@ namespace CSharpConsoleKSP
 		{
 			get
 			{
-				if (instance == null) {
+				if (instance == null)
+				{
 					instance = new Mono.CSharp.Evaluator(new CompilerContext(new CompilerSettings(), new EvaluatorPrinter()));
 				}
 				return instance;
