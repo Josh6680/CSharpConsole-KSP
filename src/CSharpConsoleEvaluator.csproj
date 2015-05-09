@@ -80,20 +80,20 @@ IF NOT EXIST "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program
 echo Making directory: "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\Plugins"
 mkdir "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\Plugins"
 )
-IF NOT EXIST "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\lib" (
-echo Making directory: "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\lib"
-mkdir "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\lib"
+IF NOT EXIST "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\PluginData\lib" (
+echo Making directory: "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\PluginData\lib"
+mkdir "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\PluginData\lib"
 )
 
 echo Copying to KSP GameData folder...
 IF EXIST "$(TargetDir)$(TargetName).pdb" (
-COPY "$(TargetDir)$(TargetName).pdb" "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\lib\$(TargetName).dll.dat.pdb"
+COPY "$(TargetDir)$(TargetName).pdb" "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\PluginData\lib\$(TargetName).pdb"
 )
-COPY "$(TargetPath)" "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\lib\$(TargetName).dll.dat"
+COPY "$(TargetPath)" "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\PluginData\lib\$(TargetName).dll"
 
 if "$(ConfigurationName)" == "Release" (
 echo Deploying to dist folder...
-COPY "$(TargetPath)" "$(TargetDir)..\..\..\dist\CSharpConsole\lib\$(TargetName).dll.dat"
+COPY "$(TargetPath)" "$(TargetDir)..\..\..\dist\CSharpConsole\PluginData\lib\$(TargetName).dll"
 )
 
 EXIT 0</PostBuildEvent>

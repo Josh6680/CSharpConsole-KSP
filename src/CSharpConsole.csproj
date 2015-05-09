@@ -134,9 +134,9 @@ IF NOT EXIST "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program
 echo Making directory: "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\Plugins"
 mkdir "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\Plugins"
 )
-IF NOT EXIST "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\lib" (
-echo Making directory: "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\lib"
-mkdir "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\lib"
+IF NOT EXIST "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\PluginData\lib" (
+echo Making directory: "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\PluginData\lib"
+mkdir "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\PluginData\lib"
 )
 
 echo Copying to KSP GameData folder...
@@ -144,11 +144,11 @@ IF EXIST "$(TargetDir)$(TargetName).pdb" (
 COPY "$(TargetDir)$(TargetName).pdb" "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\Plugins"
 )
 COPY "$(TargetPath)" "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\Plugins"
-COPY "$(TargetDir)lib\Mono.CSharp.dll" "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\lib\Mono.CSharp.dll.dat"
+COPY "$(TargetDir)lib\Mono.CSharp.dll" "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\PluginData\lib\Mono.CSharp.dll"
 
 if "$(ConfigurationName)" == "Release" (
 echo Deploying to dist folder...
-COPY "$(TargetDir)lib\Mono.CSharp.dll" "$(TargetDir)..\..\..\dist\CSharpConsole\lib\Mono.CSharp.dll.dat"
+COPY "$(TargetDir)lib\Mono.CSharp.dll" "$(TargetDir)..\..\..\dist\CSharpConsole\PluginData\lib\Mono.CSharp.dll"
 COPY "$(TargetPath)" "$(TargetDir)..\..\..\dist\CSharpConsole\Plugins\$(TargetName).dll"
 )
 

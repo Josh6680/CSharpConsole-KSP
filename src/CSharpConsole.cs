@@ -41,10 +41,10 @@ internal class CSharpConsoleLoader : MonoBehaviour
 	public CSharpConsoleLoader()
 	{
 		// Manually load the Mono.CSharp library.
-		Dependancy.Load("../lib/Mono.CSharp.dll.dat");
+		Dependancy.Load("../PluginData/lib/Mono.CSharp.dll");
 
 		// Manually load the CSharpConsoleEvaluator library.
-		Dependancy.Load("../lib/CSharpConsoleEvaluator.dll.dat");
+		Dependancy.Load("../PluginData/lib/CSharpConsoleEvaluator.dll");
 
 		// Instantiate the console.
 		CSharpConsole.Initialize();
