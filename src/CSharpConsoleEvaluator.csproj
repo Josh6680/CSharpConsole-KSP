@@ -86,7 +86,9 @@ mkdir "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameDa
 )
 
 echo Copying to KSP GameData folder...
+IF EXIST "$(TargetDir)$(TargetName).pdb" (
 COPY "$(TargetDir)$(TargetName).pdb" "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\lib\$(TargetName).dll.dat.pdb"
+)
 COPY "$(TargetPath)" "C:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\GameData\CSharpConsole\lib\$(TargetName).dll.dat"
 
 if "$(ConfigurationName)" == "Release" (
