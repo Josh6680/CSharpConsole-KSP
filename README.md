@@ -1,3 +1,10 @@
+Deprecation Notice:
+-----------------
+**This plugin is deprecated.** For a better way of debugging your plugins please see this forum thread that describes how you can actually attach the debugger:
+http://forum.kerbalspaceprogram.com/threads/114241-KSP-Plugin-debugging-for-Visual-Studio-and-Monodevelop-on-all-OS
+
+This project may be repurposed for something similar in the future, perhaps a generic Unity game console.
+
 Interactive C# Console (CSharpConsole)
 =================
 
