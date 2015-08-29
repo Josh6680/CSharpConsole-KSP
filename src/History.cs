@@ -31,10 +31,14 @@
 using System;
 using System.Collections.Generic;
 
+// ReSharper disable UnusedMember.Global
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedMethodReturnValue.Global
+
 [Serializable]
 public class History
 {
-	private List<string> history;
+	private readonly List<string> history;
 
 	[NonSerialized]
 	private int lastindex = -1;

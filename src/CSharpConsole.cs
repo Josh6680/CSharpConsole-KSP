@@ -35,8 +35,10 @@ using System.Reflection;
 using CSharpConsoleKSP;
 using UnityEngine;
 
+// ReSharper disable UnusedMember.Global
+
 [KSPAddon(KSPAddon.Startup.Instantly, true)]
-internal class CSharpConsoleLoader : MonoBehaviour
+class CSharpConsoleLoader : MonoBehaviour
 {
 	public CSharpConsoleLoader()
 	{
@@ -62,12 +64,12 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 		{
 			// Instantiate the CSharpConsole object for the first time.
 			instance = new GameObject("CSharpConsole", typeof(CSharpConsole));
-			MonoBehaviour.DontDestroyOnLoad(instance);
+			DontDestroyOnLoad(instance);
 
 			// The Evaluator will use our custom class as the base class (in which scope and context the entered code is executed).
 			Evaluator.fetch.InteractiveBaseClass = typeof(ConsoleExecBaseClass);
 
-			CSharpConsole.Print(ConsoleExecBaseClass.about + "\n");
+			Print(ConsoleExecBaseClass.about + "\n");
 
 			return true;
 		}
@@ -99,7 +101,7 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 
 	private string consoleText = "<color=white>";
 	private string cmd = "";
-	private History history = new History();
+	private readonly History history = new History();
 	private string[] completions = null;
 	private string completionPrefix = "";
 	private bool updateCompletions = false;
@@ -140,39 +142,36 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 		{
 			skinBackground = new Texture2D(1, 1, TextureFormat.Alpha8, false);
 
-			autoCompleteSkin = new GUIStyle(GUI.skin.label);
-			autoCompleteSkin.alignment = TextAnchor.MiddleLeft;
-			autoCompleteSkin.richText = false;
-			autoCompleteSkin.wordWrap = false;
-			autoCompleteSkin.stretchWidth = true;
-			autoCompleteSkin.stretchHeight = false;
-
-			autoCompleteSkin.normal = new GUIStyleState()
+			autoCompleteSkin = new GUIStyle(GUI.skin.label)
 			{
-				background = skinBackground,
-				textColor = Color.white
+				alignment = TextAnchor.MiddleLeft,
+				richText = false,
+				wordWrap = false,
+				stretchWidth = true,
+				stretchHeight = false,
+				border = new RectOffset(0, 0, 0, 0),
+				padding = new RectOffset(3, 0, 0, 0),
+				normal = new GUIStyleState
+				{
+					background = skinBackground,
+					textColor = Color.white
+				},
+				active = new GUIStyleState
+				{
+					background = skinBackground,
+					textColor = new Color(0, 0.5f, 0, 1)
+				},
+				focused = new GUIStyleState
+				{
+					background = skinBackground,
+					textColor = Color.green
+				},
+				hover = new GUIStyleState
+				{
+					background = skinBackground,
+					textColor = Color.green
+				}
 			};
-
-			autoCompleteSkin.active = new GUIStyleState()
-			{
-				background = skinBackground,
-				textColor = new Color(0, 0.5f, 0, 1)
-			};
-
-			autoCompleteSkin.focused = new GUIStyleState()
-			{
-				background = skinBackground,
-				textColor = Color.green
-			};
-
-			autoCompleteSkin.hover = new GUIStyleState()
-			{
-				background = skinBackground,
-				textColor = Color.green
-			};
-
-			autoCompleteSkin.border = new RectOffset(0, 0, 0, 0);
-			autoCompleteSkin.padding = new RectOffset(3, 0, 0, 0);
 		}
 
 		if (isVisible)
@@ -185,7 +184,7 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 		}
 	}
 
-	private void ConsoleWindow(int windowID)
+	private void ConsoleWindow(int windowId)
 	{
 		// Make sure the default text coloring is white.
 		GUI.contentColor = Color.white;
@@ -203,7 +202,7 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 			scrollPosition = GUILayout.BeginScrollView(scrollPosition);
 			{
 				// Display the console text.
-				GUILayout.TextArea(consoleText + "</color>", int.MaxValue, new GUIStyle()
+				GUILayout.TextArea(consoleText + "</color>", int.MaxValue, new GUIStyle
 				{
 					richText = true,
 					wordWrap = false,
@@ -272,7 +271,7 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 		GUI.DragWindow(titleBarRect);
 	}
 
-	private void AutoCompleteWindow(int windowID)
+	private void AutoCompleteWindow(int windowId)
 	{
 		int y = 0;
 		foreach (string str in completions)
@@ -312,13 +311,13 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 				// Additional assembies can be referenced in-game by executing:
 				// LoadAssembly("Assembly_Name"); or using Namespace_Name;
 				Evaluator.fetch.ReferenceAssembly(Assembly.GetExecutingAssembly());
-				Evaluator.fetch.ReferenceAssembly(typeof(System.Object).Assembly);
+				Evaluator.fetch.ReferenceAssembly(typeof(object).Assembly);
 				Evaluator.fetch.ReferenceAssembly(typeof(MonoBehaviour).Assembly);
 				Evaluator.fetch.ReferenceAssembly(typeof(PSystemBody).Assembly);
 				Evaluator.fetch.ReferenceAssembly(typeof(Mono.CSharp.Evaluator).Assembly);
 				Evaluator.fetch.ReferenceAssembly(typeof(Evaluator).Assembly);
 
-				string usings = @"// This is totally just a blank line for formatting reasons.
+				const string usings = @"// This is totally just a blank line for formatting reasons.
 					using System;
 					using System.Collections.Generic;
 					using System.Text;
@@ -371,7 +370,7 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 			{
 				if (ress)
 				{
-					if (res.GetType().Equals(typeof(InvisibleValue)))
+					if (res.GetType() == typeof(InvisibleValue))
 					{
 						// HACK: Workaround to explicitly disable showing the returned value.
 					}
@@ -483,7 +482,7 @@ public class CSharpConsole : ExtendedBehaviour<CSharpConsole>
 	public static void HandleLog(string message, string stackTrace, LogType type)
 	{
 		string output = "[" + type.ToString() + "]: " + message;
-		if (stackTrace != null && stackTrace != "")
+		if (!string.IsNullOrEmpty(stackTrace))
 		{
 			output += "\n" + stackTrace;
 		}

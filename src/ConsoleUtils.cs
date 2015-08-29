@@ -68,7 +68,7 @@ public static class Con
 		{ LogType.Assert, "orange" },
 		{ LogType.Warning, "yellow" },
 		{ LogType.Log, "white" },
-		{ LogType.Exception, "red" },
+		{ LogType.Exception, "red" }
 	};
 
 	public static void Log(string message)

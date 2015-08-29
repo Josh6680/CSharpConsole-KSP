@@ -34,6 +34,10 @@ using System.Reflection;
 using Mono.CSharp;
 using Evaluator = CSharpConsoleKSP.Evaluator;
 
+// ReSharper disable UnusedMember.Global
+// ReSharper disable InconsistentNaming
+// ReSharper disable MemberCanBePrivate.Global
+
 [Serializable]
 public class ConsoleExecBaseClass
 {
@@ -53,11 +57,11 @@ public class ConsoleExecBaseClass
 		get
 		{
 #if DEBUG
-			string buildType = " [Debug Build]";
+			const string buildType = " [Debug Build]";
 #elif RELEASE
-			string buildType = " [Release Build]";
+			const string buildType = " [Release Build]";
 #else
-			string buildType = " [Unknown Build]";
+			const string buildType = " [Unknown Build]";
 #endif
 			return "<< Interactive C# Console v" + Assembly.GetExecutingAssembly().GetName().Version.ToString() + buildType + " by Josh >>";
 		}
@@ -98,7 +102,7 @@ public class ConsoleExecBaseClass
 	{
 		get
 		{
-			if (HighLogic.SaveFolder != null && HighLogic.SaveFolder != "" && HighLogic.SaveFolder != "default")
+			if (!string.IsNullOrEmpty(HighLogic.SaveFolder) && HighLogic.SaveFolder != "default")
 			{
 				return "Hello, " + HighLogic.SaveFolder + ".";
 			}

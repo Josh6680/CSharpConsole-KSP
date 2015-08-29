@@ -2,11 +2,13 @@
 using System.Reflection;
 using UnityEngine;
 
+// ReSharper disable UnusedMethodReturnValue.Global
+
 public static class Dependancy
 {
 	public static Assembly Load(string filename)
 	{
-		string path = new FileInfo(Assembly.GetExecutingAssembly().Location).DirectoryName + "\\" + filename;
+		string path = new FileInfo(Assembly.GetExecutingAssembly().Location).DirectoryName + "/" + filename;
 		if (File.Exists(path))
 		{
 			return Assembly.LoadFile(path);
