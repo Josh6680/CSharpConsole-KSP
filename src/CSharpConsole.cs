@@ -1,7 +1,7 @@
 ﻿/*
 	Interactive C# Console
 	https://github.com/Josh6680/CSharpConsole-KSP
-	Copyright (C) 2014 Josh
+	Copyright (C) 2015 Josh
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 	This library is intended to be used as a plugin for Kerbal Space Program
-	which is copyright 2011-2014 Squad. Your usage of Kerbal Space Program
+	which is copyright 2011-2015 Squad. Your usage of Kerbal Space Program
 	itself is governed by the terms of its EULA, not the license above.
 	https://kerbalspaceprogram.com/
 
